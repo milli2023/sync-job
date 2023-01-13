@@ -1,0 +1,767 @@
+[{
+  "accumulationCustomerNumber": "string",
+  "accumulationDocumentNumber": "string",
+  "billingType": "string",
+  "companyCodeCurrency": {
+    "isoCurrencyCodeAlpha": "string",
+    "isoCurrencyCodeNum": 0,
+    "isoCurrencyName": "string"
+  },
+  "currency": {
+    "isoCurrencyCodeAlpha": "string",
+    "isoCurrencyCodeNum": 0,
+    "isoCurrencyName": "string"
+  },
+  "currencyConversionFactors": [
+    {
+      "conversionFactor": 0,
+      "sourceCurrency": {
+        "isoCurrencyCodeAlpha": "string",
+        "isoCurrencyCodeNum": 0,
+        "isoCurrencyName": "string"
+      },
+      "targetCurrency": {
+        "isoCurrencyCodeAlpha": "string",
+        "isoCurrencyCodeNum": 0,
+        "isoCurrencyName": "string"
+      }
+    }
+  ],
+  "customer": {
+    "administrativeDestination": {
+      "city": "string",
+      "country": "string",
+      "currencyConversion": {
+        "currency": {
+          "isoCurrencyCodeAlpha": "string",
+          "isoCurrencyCodeNum": 0,
+          "isoCurrencyName": "string"
+        },
+        "rate": 0
+      },
+      "externalJurisdictionCode": "string",
+      "latitude": "string",
+      "locationCode": "string",
+      "locationCustomsStatus": "FREE_CIRCULATION",
+      "longitude": "string",
+      "mainDivision": "string",
+      "postalCode": "string",
+      "streetAddress1": "string",
+      "streetAddress2": "string",
+      "subDivision": "string",
+      "taxAreaId": "string"
+    },
+    "customerCode": {
+      "classCode": "string",
+      "isBusinessIndicator": true,
+      "value": "string"
+    },
+    "destination": {
+      "city": "string",
+      "country": "string",
+      "currencyConversion": {
+        "currency": {
+          "isoCurrencyCodeAlpha": "string",
+          "isoCurrencyCodeNum": 0,
+          "isoCurrencyName": "string"
+        },
+        "rate": 0
+      },
+      "externalJurisdictionCode": "string",
+      "latitude": "string",
+      "locationCode": "string",
+      "locationCustomsStatus": "FREE_CIRCULATION",
+      "longitude": "string",
+      "mainDivision": "string",
+      "postalCode": "string",
+      "streetAddress1": "string",
+      "streetAddress2": "string",
+      "subDivision": "string",
+      "taxAreaId": "string"
+    },
+    "exemptionCertificate": {
+      "exemptionCertificateNumber": "string",
+      "value": "string"
+    },
+    "exemptionReasonCode": "string",
+    "isTaxExempt": true,
+    "taxRegistrations": [
+      {
+        "hasPhysicalPresenceIndicator": true,
+        "impositionType": {
+          "impositionTypeId": "string",
+          "userDefined": true,
+          "value": "string",
+          "withholdingType": "string"
+        },
+        "isoCountryCode": "string",
+        "jurisdictionId": "string",
+        "mainDivision": "string",
+        "nexusOverrides": [
+          {
+            "city": true,
+            "country": true,
+            "district": true,
+            "locationRole": "ADMINISTRATIVE_DESTINATION",
+            "mainDivision": true,
+            "subDivision": true
+          }
+        ],
+        "physicalLocations": [
+          {
+            "city": "string",
+            "country": "string",
+            "mainDivision": "string",
+            "postalCode": "string",
+            "streetAddress1": "string",
+            "streetAddress2": "string",
+            "subDivision": "string",
+            "taxAreaId": "string"
+          }
+        ],
+        "taxRegistrationNumber": "string"
+      }
+    ]
+  },
+  "deliveryTerm": "EXW",
+  "discount": {
+    "discountType": "DiscountAmount",
+    "discountValue": 0,
+    "userDefinedDiscountCode": "string"
+  },
+  "documentDate": "2022-03-11",
+  "documentNumber": "string",
+  "documentSequenceId": "string",
+  "documentType": "string",
+  "exemptOverrides": [
+    {
+      "amount": 0,
+      "impositionType": {
+        "impositionTypeId": "string",
+        "userDefined": true,
+        "value": "string",
+        "withholdingType": "string"
+      },
+      "jurisdictionType": "APO",
+      "reasonCode": "string"
+    }
+  ],
+  "impositionInclusions": [
+    {
+      "impositionType": {
+        "impositionTypeId": "string",
+        "userDefined": true,
+        "value": "string",
+        "withholdingType": "string"
+      },
+      "jurisdictionType": "APO"
+    }
+  ],
+  "isTaxOnlyAdjustmentIndicator": true,
+  "lineItems": [
+    {
+      "amountBilledToDate": 0,
+      "chainTransactionPhase": "MANUFACTURER",
+      "commodityCode": {
+        "commodityCodeType": "string",
+        "value": "string"
+      },
+      "companyCodeCurrencyTaxAmount": 0,
+      "companyCodeCurrencyTaxableAmount": 0,
+      "cost": 0,
+      "costCenter": "string",
+      "countryOfOriginISOCode": "string",
+      "customer": {
+        "administrativeDestination": {
+          "city": "string",
+          "country": "string",
+          "currencyConversion": {
+            "currency": {
+              "isoCurrencyCodeAlpha": "string",
+              "isoCurrencyCodeNum": 0,
+              "isoCurrencyName": "string"
+            },
+            "rate": 0
+          },
+          "externalJurisdictionCode": "string",
+          "latitude": "string",
+          "locationCode": "string",
+          "locationCustomsStatus": "FREE_CIRCULATION",
+          "longitude": "string",
+          "mainDivision": "string",
+          "postalCode": "string",
+          "streetAddress1": "string",
+          "streetAddress2": "string",
+          "subDivision": "string",
+          "taxAreaId": "string"
+        },
+        "customerCode": {
+          "classCode": "string",
+          "isBusinessIndicator": true,
+          "value": "string"
+        },
+        "destination": {
+          "city": "string",
+          "country": "string",
+          "currencyConversion": {
+            "currency": {
+              "isoCurrencyCodeAlpha": "string",
+              "isoCurrencyCodeNum": 0,
+              "isoCurrencyName": "string"
+            },
+            "rate": 0
+          },
+          "externalJurisdictionCode": "string",
+          "latitude": "string",
+          "locationCode": "string",
+          "locationCustomsStatus": "FREE_CIRCULATION",
+          "longitude": "string",
+          "mainDivision": "string",
+          "postalCode": "string",
+          "streetAddress1": "string",
+          "streetAddress2": "string",
+          "subDivision": "string",
+          "taxAreaId": "string"
+        },
+        "exemptionCertificate": {
+          "exemptionCertificateNumber": "string",
+          "value": "string"
+        },
+        "exemptionReasonCode": "string",
+        "isTaxExempt": true,
+        "taxRegistrations": [
+          {
+            "hasPhysicalPresenceIndicator": true,
+            "impositionType": {
+              "impositionTypeId": "string",
+              "userDefined": true,
+              "value": "string",
+              "withholdingType": "string"
+            },
+            "isoCountryCode": "string",
+            "jurisdictionId": "string",
+            "mainDivision": "string",
+            "nexusOverrides": [
+              {
+                "city": true,
+                "country": true,
+                "district": true,
+                "locationRole": "ADMINISTRATIVE_DESTINATION",
+                "mainDivision": true,
+                "subDivision": true
+              }
+            ],
+            "physicalLocations": [
+              {
+                "city": "string",
+                "country": "string",
+                "mainDivision": "string",
+                "postalCode": "string",
+                "streetAddress1": "string",
+                "streetAddress2": "string",
+                "subDivision": "string",
+                "taxAreaId": "string"
+              }
+            ],
+            "taxRegistrationNumber": "string"
+          }
+        ]
+      },
+      "deliveryTerm": "EXW",
+      "departmentCode": "string",
+      "discount": {
+        "discountType": "DiscountAmount",
+        "discountValue": 0,
+        "userDefinedDiscountCode": "string"
+      },
+      "exemptOverrides": [
+        {
+          "amount": 0,
+          "impositionType": {
+            "impositionTypeId": "string",
+            "userDefined": true,
+            "value": "string",
+            "withholdingType": "string"
+          },
+          "jurisdictionType": "APO",
+          "reasonCode": "string"
+        }
+      ],
+      "exportProcedure": "string",
+      "extendedPrice": 0,
+      "fairMarketValue": 0,
+      "flexibleFields": {
+        "flexibleCodeFields": [
+          {
+            "fieldId": 1,
+            "value": "string"
+          }
+        ],
+        "flexibleDateFields": [
+          {
+            "fieldId": 1,
+            "value": "2022-03-11"
+          }
+        ],
+        "flexibleNumericFields": [
+          {
+            "fieldId": 1,
+            "value": 0
+          }
+        ]
+      },
+      "freight": 0,
+      "generalLedgerAccount": "string",
+      "impositionInclusions": [
+        {
+          "impositionType": {
+            "impositionTypeId": "string",
+            "userDefined": true,
+            "value": "string",
+            "withholdingType": "string"
+          },
+          "jurisdictionType": "APO"
+        }
+      ],
+      "inputTotalTax": 0,
+      "intrastatCommodityCode": "string",
+      "isMulticomponent": true,
+      "landedCost": 0,
+      "lineItemId": "string",
+      "lineItemNumber": 0,
+      "lineItems": [
+        {}
+      ],
+      "lineType": {
+        "accumulationLocation": "string",
+        "content": "string",
+        "direction": "string",
+        "status": "string",
+        "value": "string"
+      },
+      "locationCode": "string",
+      "materialCode": "string",
+      "materialOrigin": "string",
+      "modeOfTransport": 1,
+      "natureOfTransaction": 1,
+      "netMassKilograms": 1,
+      "nonTaxableOverrides": [
+        {
+          "amount": 0,
+          "impositionType": {
+            "impositionTypeId": "string",
+            "userDefined": true,
+            "value": "string",
+            "withholdingType": "string"
+          },
+          "jurisdictionType": "APO",
+          "reasonCode": "string"
+        }
+      ],
+      "product": {
+        "productClass": "string",
+        "value": "string"
+      },
+      "projectNumber": "string",
+      "quantity": {
+        "unitOfMeasure": "str",
+        "value": 0
+      },
+      "rateOverrides": [
+        {
+          "impositionType": {
+            "impositionTypeId": "string",
+            "userDefined": true,
+            "value": "string",
+            "withholdingType": "string"
+          },
+          "jurisdictionType": "APO",
+          "rate": 0
+        }
+      ],
+      "returnsFields": {
+        "returnsCodeFields": [
+          {
+            "name": "string",
+            "value": "string"
+          }
+        ],
+        "returnsDateFields": [
+          {
+            "name": "string",
+            "value": "2022-03-11"
+          }
+        ],
+        "returnsIndicatorFields": [
+          {
+            "name": "string",
+            "value": true
+          }
+        ],
+        "returnsNumericFields": [
+          {
+            "name": "string",
+            "value": 0
+          }
+        ]
+      },
+      "seller": {
+        "administrativeOrigin": {
+          "city": "string",
+          "country": "string",
+          "currencyConversion": {
+            "currency": {
+              "isoCurrencyCodeAlpha": "string",
+              "isoCurrencyCodeNum": 0,
+              "isoCurrencyName": "string"
+            },
+            "rate": 0
+          },
+          "externalJurisdictionCode": "string",
+          "latitude": "string",
+          "locationCode": "string",
+          "locationCustomsStatus": "FREE_CIRCULATION",
+          "longitude": "string",
+          "mainDivision": "string",
+          "postalCode": "string",
+          "streetAddress1": "string",
+          "streetAddress2": "string",
+          "subDivision": "string",
+          "taxAreaId": "string"
+        },
+        "company": "string",
+        "department": "string",
+        "dispatcher": {
+          "dispatcherCode": {
+            "classCode": "string",
+            "value": "string"
+          },
+          "taxRegistrations": [
+            {
+              "hasPhysicalPresenceIndicator": true,
+              "impositionType": {
+                "impositionTypeId": "string",
+                "userDefined": true,
+                "value": "string",
+                "withholdingType": "string"
+              },
+              "isoCountryCode": "string",
+              "jurisdictionId": "string",
+              "mainDivision": "string",
+              "nexusOverrides": [
+                {
+                  "city": true,
+                  "country": true,
+                  "district": true,
+                  "locationRole": "ADMINISTRATIVE_DESTINATION",
+                  "mainDivision": true,
+                  "subDivision": true
+                }
+              ],
+              "physicalLocations": [
+                {
+                  "city": "string",
+                  "country": "string",
+                  "mainDivision": "string",
+                  "postalCode": "string",
+                  "streetAddress1": "string",
+                  "streetAddress2": "string",
+                  "subDivision": "string",
+                  "taxAreaId": "string"
+                }
+              ],
+              "taxRegistrationNumber": "string"
+            }
+          ]
+        },
+        "division": "string",
+        "nexusIndicator": true,
+        "nexusReasonCode": "string",
+        "physicalOrigin": {
+          "city": "string",
+          "country": "string",
+          "currencyConversion": {
+            "currency": {
+              "isoCurrencyCodeAlpha": "string",
+              "isoCurrencyCodeNum": 0,
+              "isoCurrencyName": "string"
+            },
+            "rate": 0
+          },
+          "externalJurisdictionCode": "string",
+          "latitude": "string",
+          "locationCode": "string",
+          "locationCustomsStatus": "FREE_CIRCULATION",
+          "longitude": "string",
+          "mainDivision": "string",
+          "postalCode": "string",
+          "streetAddress1": "string",
+          "streetAddress2": "string",
+          "subDivision": "string",
+          "taxAreaId": "string"
+        },
+        "taxRegistrations": [
+          {
+            "hasPhysicalPresenceIndicator": true,
+            "impositionType": {
+              "impositionTypeId": "string",
+              "userDefined": true,
+              "value": "string",
+              "withholdingType": "string"
+            },
+            "isoCountryCode": "string",
+            "jurisdictionId": "string",
+            "mainDivision": "string",
+            "nexusOverrides": [
+              {
+                "city": true,
+                "country": true,
+                "district": true,
+                "locationRole": "ADMINISTRATIVE_DESTINATION",
+                "mainDivision": true,
+                "subDivision": true
+              }
+            ],
+            "physicalLocations": [
+              {
+                "city": "string",
+                "country": "string",
+                "mainDivision": "string",
+                "postalCode": "string",
+                "streetAddress1": "string",
+                "streetAddress2": "string",
+                "subDivision": "string",
+                "taxAreaId": "string"
+              }
+            ],
+            "taxRegistrationNumber": "string"
+          }
+        ],
+        "utilityProvider": "REGULATED_TAXPAYER"
+      },
+      "simplificationCode": "CONSIGNMENT",
+      "situsOverride": {
+        "taxingLocation": "ADMINISTRATIVE_DESTINATION"
+      },
+      "statisticalValue": {
+        "amount": 0,
+        "currency": {
+          "isoCurrencyCodeAlpha": "string",
+          "isoCurrencyCodeNum": 0,
+          "isoCurrencyName": "string"
+        }
+      },
+      "supplementaryUnit": {
+        "unitType": "string",
+        "value": 0
+      },
+      "previousTaxPaid": 0,
+      "taxDate": "2022-03-11",
+      "taxIncludedIndicator": true,
+      "taxOverride": {
+        "overrideReasonCode": "string",
+        "overrideType": "TAXABLE"
+      },
+      "titleTransfer": "ORIGIN",
+      "transactionType": "SALE",
+      "unitPrice": 0,
+      "usage": "string",
+      "usageClass": "string",
+      "vendorSKU": "string",
+      "volume": {
+        "unitOfMeasure": "str",
+        "value": 0
+      },
+      "weight": {
+        "unitOfMeasure": "str",
+        "value": 0
+      }
+    }
+  ],
+  "locationCode": "string",
+  "nonTaxableOverrides": [
+    {
+      "amount": 0,
+      "impositionType": {
+        "impositionTypeId": "string",
+        "userDefined": true,
+        "value": "string",
+        "withholdingType": "string"
+      },
+      "jurisdictionType": "APO",
+      "reasonCode": "string"
+    }
+  ],
+  "orderType": "string",
+  "originalCurrency": {
+    "isoCurrencyCodeAlpha": "string",
+    "isoCurrencyCodeNum": 0,
+    "isoCurrencyName": "string"
+  },
+  "paymentDate": "2022-03-11",
+  "postToJournal": true,
+  "postingDate": "2022-03-11",
+  "proratePercentage": -100000000,
+  "rateOverrides": [
+    {
+      "impositionType": {
+        "impositionTypeId": "string",
+        "userDefined": true,
+        "value": "string",
+        "withholdingType": "string"
+      },
+      "jurisdictionType": "APO",
+      "rate": 0
+    }
+  ],
+  "returnAssistedParametersIndicator": true,
+  "returnGeneratedLineItemsIndicator": true,
+  "returnTimeElapsedDetailsIndicator": true,
+  "roundAtLineLevel": true,
+  "saleMessageType": "QUOTATION",
+  "seller": {
+    "administrativeOrigin": {
+      "city": "string",
+      "country": "string",
+      "currencyConversion": {
+        "currency": {
+          "isoCurrencyCodeAlpha": "string",
+          "isoCurrencyCodeNum": 0,
+          "isoCurrencyName": "string"
+        },
+        "rate": 0
+      },
+      "externalJurisdictionCode": "string",
+      "latitude": "string",
+      "locationCode": "string",
+      "locationCustomsStatus": "FREE_CIRCULATION",
+      "longitude": "string",
+      "mainDivision": "string",
+      "postalCode": "string",
+      "streetAddress1": "string",
+      "streetAddress2": "string",
+      "subDivision": "string",
+      "taxAreaId": "string"
+    },
+    "company": "string",
+    "department": "string",
+    "dispatcher": {
+      "dispatcherCode": {
+        "classCode": "string",
+        "value": "string"
+      },
+      "taxRegistrations": [
+        {
+          "hasPhysicalPresenceIndicator": true,
+          "impositionType": {
+            "impositionTypeId": "string",
+            "userDefined": true,
+            "value": "string",
+            "withholdingType": "string"
+          },
+          "isoCountryCode": "string",
+          "jurisdictionId": "string",
+          "mainDivision": "string",
+          "nexusOverrides": [
+            {
+              "city": true,
+              "country": true,
+              "district": true,
+              "locationRole": "ADMINISTRATIVE_DESTINATION",
+              "mainDivision": true,
+              "subDivision": true
+            }
+          ],
+          "physicalLocations": [
+            {
+              "city": "string",
+              "country": "string",
+              "mainDivision": "string",
+              "postalCode": "string",
+              "streetAddress1": "string",
+              "streetAddress2": "string",
+              "subDivision": "string",
+              "taxAreaId": "string"
+            }
+          ],
+          "taxRegistrationNumber": "string"
+        }
+      ]
+    },
+    "division": "string",
+    "nexusIndicator": true,
+    "nexusReasonCode": "string",
+    "physicalOrigin": {
+      "city": "string",
+      "country": "string",
+      "currencyConversion": {
+        "currency": {
+          "isoCurrencyCodeAlpha": "string",
+          "isoCurrencyCodeNum": 0,
+          "isoCurrencyName": "string"
+        },
+        "rate": 0
+      },
+      "externalJurisdictionCode": "string",
+      "latitude": "string",
+      "locationCode": "string",
+      "locationCustomsStatus": "FREE_CIRCULATION",
+      "longitude": "string",
+      "mainDivision": "string",
+      "postalCode": "string",
+      "streetAddress1": "string",
+      "streetAddress2": "string",
+      "subDivision": "string",
+      "taxAreaId": "string"
+    },
+    "taxRegistrations": [
+      {
+        "hasPhysicalPresenceIndicator": true,
+        "impositionType": {
+          "impositionTypeId": "string",
+          "userDefined": true,
+          "value": "string",
+          "withholdingType": "string"
+        },
+        "isoCountryCode": "string",
+        "jurisdictionId": "string",
+        "mainDivision": "string",
+        "nexusOverrides": [
+          {
+            "city": true,
+            "country": true,
+            "district": true,
+            "locationRole": "ADMINISTRATIVE_DESTINATION",
+            "mainDivision": true,
+            "subDivision": true
+          }
+        ],
+        "physicalLocations": [
+          {
+            "city": "string",
+            "country": "string",
+            "mainDivision": "string",
+            "postalCode": "string",
+            "streetAddress1": "string",
+            "streetAddress2": "string",
+            "subDivision": "string",
+            "taxAreaId": "string"
+          }
+        ],
+        "taxRegistrationNumber": "string"
+      }
+    ],
+    "utilityProvider": "REGULATED_TAXPAYER"
+  },
+  "simplificationCode": "CONSIGNMENT",
+  "situsOverride": {
+    "taxingLocation": "ADMINISTRATIVE_DESTINATION"
+  },
+  "taxOverride": {
+    "overrideReasonCode": "string",
+    "overrideType": "TAXABLE"
+  },
+  "taxPointDate": "2022-03-11",
+  "transactionId": "string",
+  "transactionType": "SALE"
+}]

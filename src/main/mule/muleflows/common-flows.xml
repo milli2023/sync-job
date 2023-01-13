@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<sub-flow name="get-sf-accesstoken-subflow" doc:id="bd5b629e-a6cc-474a-88f9-e9890773d5a1" >
+		<os:retrieve doc:name="Retrieve Existing OAuth Token" doc:id="0726db05-b59b-4ba8-9397-1498b3066dec" key="oAuthToken" objectStore="Object_store">
+			<os:default-value ><![CDATA[#['']]]></os:default-value>
+		</os:retrieve>
+		<choice doc:name="Cached Token Exists?" doc:id="576de863-744f-4363-a715-db380d7a3ce1" >
+			<when expression="#[isEmpty(payload)]">
+				<flow-ref doc:name="generate-new-token-subflow" doc:id="d9a8782c-a49d-4881-ab71-ccb3e1706f4c" name="generate-new-token-subflow"/>
+			
+</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="6dd0ba44-692f-4a71-9411-77ea33a50f9c" message="#[vars.loggingIdentifier] Reusing cached oAuth Token"/>
+			</otherwise>
+		
+</choice>
+	</sub-flow>
+	<sub-flow name="generate-new-token-subflow" doc:id="89cc1cb9-ef01-4d0b-a60f-c3592ef9cd8d" >
+		<ee:transform doc:name="Transform Message" doc:id="e8aafa79-eb1e-4971-92d7-fac5b93edbe8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	password : p('secure::salesforce.password') ++ (p('secure::salesforce.securitytoken') default ''),
+	grant_type : "password",
+	client_secret : p('secure::salesforce.consumersecret'),
+	client_id : p('secure::salesforce.consumerkey'),
+	username : p('salesforce.username')
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<http:request method="POST" doc:name="Get Token" doc:id="334b7ce4-36f0-4254-8fc5-bfeeadb9f3f0" config-ref="SF_HTTP_Request_Configuration" path="${salesforce.token.endpoint}" />
+		<logger level="INFO" doc:name="Logger" doc:id="0aa9ccd6-f57e-482e-8ed3-de3397911d98" message="#[vars.loggingIdentifier] Generated new oAuth Token" />
+		<ee:transform doc:name="Transform Token Data" doc:id="472dd882-9d8f-419f-ae14-d9988278a0fe" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::URL
+output application/json
+---
+{
+	access_token: payload.access_token,
+	instance_url_host: parseURI(payload.instance_url default '').host,
+	token_type: payload.token_type
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="92d5fd04-bec3-4aae-b814-1c8ec76d8a08" message="Authentication #[payload]"/>
+		<os:store doc:name="Store oAuthToken" doc:id="3018bb9e-f2d4-42f0-be64-5261b6f00b5b" key="oAuthToken" objectStore="Object_store" />
+	</sub-flow>
+</mule>

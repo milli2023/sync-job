@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="3ac49ccc-e89e-498b-93e6-954b5cb5e790"/>
+	<flow name="jde-salestax-to-vertex-api-flow" doc:id="8d4a8575-e9c9-4add-a854-7413e2fc597c">
+		<set-variable value="#[payload]" doc:name="Inbound Content" doc:id="205a4819-c91b-4468-9b1d-97ffd2d94732" variableName="InboundContent"/>
+		<os:retrieve doc:name="Retrieve" doc:id="01a7f69c-a9ee-4c6e-bf37-0df70c7725f9" key="TransactionDate" objectStore="JDE_Vextex_SalesTax_Object_store">
+			<os:default-value ><![CDATA[${workflow.jde-vertex-salestax.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Retrieve Last Transaction Date" doc:id="85e214a3-a7c3-470e-a92b-ac4367dcedda" message="Retrieve Last Transaction Date #[payload]"/>
+		<set-variable value="#[[]]" doc:name="Initialize Transaction Validation Errors" doc:id="bc877c47-d327-40ff-9824-f9d9b5291a7e" variableName="TransactionValidationErrors"/>
+		<set-variable value='#[now() as String {format:"yyyyMMddHHa"}]' doc:name="today" doc:id="4c27b121-f7af-4e08-a392-4cbd40dd0867" variableName="Today" />
+		<set-variable value="#[payload]" doc:name="Last Transaction Date" doc:id="e55ad1d5-ca5a-4145-a123-57e8a10c464f" variableName="lastTransactionDate"/>
+		<set-variable value='#["ARC_JDE_Vertex_Monthly_SalesTax_" ++ vars.Today ++ ".csv"]' doc:name="fileName" doc:id="1a926cb3-751a-48f4-9714-dce0ac8858d8" variableName="fileName" />
+		<set-variable value='"ARC_JDE_Vertex_Monthly_SalesTax_Invalid_Transactions_" ++ vars.Today ++ ".csv"' doc:name="errorFileName" doc:id="f27ff653-d02c-4847-bba6-69a6e7a39aa4" variableName="errorFileName"/>
+		<set-variable doc:name="fileContent" doc:id="81b7b6a7-e4ca-42df-b3b0-62b60d1e93fe" variableName="fileContent" value="#[[]]"/>
+		<logger level="INFO" doc:name="JDE Vertex File Name" doc:id="1f18113c-7206-4403-bba2-a8c7ab36b956" message="Processing File #[vars.SFTP_Filename] "/>
+		<set-payload value="#[vars.InboundContent]" doc:name="Inbound Content" doc:id="bfbacfd8-2648-44ee-b2c9-37b4085080ac" />
+        <flow-ref doc:name="Sales Tax Validation" doc:id="6512ec8d-9c88-4483-814e-269c60447d03" name="jde-salestax-validation-subflow"/>
+		<ee:transform doc:name="Set TransactionValidationErrors" doc:id="0e53313b-0de7-4298-b162-e1c76b4dcc55" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="TransactionValidationErrors" ><![CDATA[%dw 2.0
+output application/java
+---
+payload filter ((item, index) -> item.isValid == false)]]></ee:set-variable>
+				<ee:set-variable variableName="taxMonthlyReportJson" ><![CDATA[%dw 2.0
+output application/java
+---
+payload filter ((item, index) -> item.isValid == true)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="TransactionValidationErrors" doc:id="9870c385-f487-447c-8910-ee48a541a024" message="TransactionValidationErrors #[vars.TransactionValidationErrors]"/>
+		<logger level="INFO" doc:name="Array of File Content" doc:id="3c8bf2c2-21fc-4a2e-b9e4-1ae61a5611dc" message="Array of File Content #[payload]"/>
+		<choice doc:name="Choice" doc:id="4686968e-1736-4d29-a410-e732495ccb36" >
+			<when expression="#[sizeOf(payload) != 0]">
+				<try doc:name="Try" doc:id="a8261ee8-40ef-4b68-9853-0ca4280deb7e">
+					<logger level="INFO" doc:name="Tax Record" doc:id="e8343d63-49d9-4885-909e-06add715dc26" message="Tax Record #[payload]" />
+					<set-variable value="#[payload]" doc:name="fileContent" doc:id="e562478a-620c-4e87-a5b9-a3fde311cd79" variableName="fileContent" />
+					<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="818e172f-6c60-4199-bd2d-64eee7686d31">
+					<email:send doc:name="Send JDE Vertex Email Escalation" doc:id="81a816c8-4e7a-47f0-9613-9f496c4a3048" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - JDE Vertex Synchronization Process Error">
+						<email:to-addresses>
+							<email:to-address value="john.cordero@redcross.org" />
+						</email:to-addresses>
+						<email:body contentType="text/html" >
+								</email:body>
+					</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+				<ee:transform doc:name="file CSV" doc:id="1789d889-d042-4ba5-a499-e4292087e4b8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="fileContent" ><![CDATA[%dw 2.0
+output text/plain
+
+fun filterPayload(data) = data filter ((item, index) -> item.isValid == true)
+---
+
+write(filterPayload(vars.fileContent), "application/csv")]]></ee:set-variable>
+						<ee:set-variable variableName="TransactionValidationErrors" ><![CDATA[%dw 2.0
+output text/plain
+
+fun filterPayload(data) = data filter ((item, index) -> item.isValid == false)
+---
+
+write(filterPayload(payload), "application/csv")]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<set-payload value="#[payload filter ((item, index) -&gt; item.isValid == true)]" doc:name="Filter on isValid == true" doc:id="a671e94d-993e-4de2-92d7-0685b2b4037c" />
+				<logger level="INFO" doc:name="fileContent" doc:id="7a1eef73-085b-473a-8b3c-2bf48583c999" message="CSV File Content #[vars.fileContent]" />
+					<logger level="INFO" doc:name="TransactionValidationErrors" doc:id="8d2f37e8-bad7-406c-8bf1-49b152afda85" message="Transaction Validation Errors #[vars.TransactionValidationErrors]"/>
+				<set-variable value="${workflow.jde-vertex-salestax.send.email}" doc:name="Send Email" doc:id="c8c62dbb-c8fc-43ff-8a7e-5c8dfabe5ebf" variableName="Send_Email" />
+				<choice doc:name="Choice" doc:id="83344a7f-8d4b-4e1a-b0de-3c6bbab880ff" >
+					<when expression='#[(vars.Send_Email default false) == "true"]'>
+						<email:send doc:name="Send Email with JDE Vertex File Attached" doc:id="0dd86738-07c7-431e-b813-e9b41a6d8908" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - JDE Vertex Monthly Tax Order Export Report" toAddresses="#[Mule::p('workflow.jde-vertex-salestax.email.report.distribution') splitBy ',']">
+							<email:body contentType="text/plain">
+								<email:content><![CDATA[Team,
+
+Attached Please find the JDE Vertex Monthly Tax Order Export Report.
+
+Thanks  PHSS Business Integrations Services]]></email:content>
+							</email:body>
+							<email:attachments><![CDATA[#[{'$(vars.fileName)': vars.fileContent }]]]></email:attachments>
+						</email:send>
+						<choice doc:name="Choice" doc:id="17592833-2319-4ffe-9f83-e4031c2ed368" >
+							<when expression="#[sizeOf(vars.TransactionValidationErrors) &gt; 0]">
+								<logger level="INFO" doc:name="Invalid Transactions" doc:id="6b4b226d-0528-4de1-a7b1-e974bcf10db8" message="Sending Invalid Transactions"/>
+								<email:send doc:name="Send Email with JDE Invalid Transactions" doc:id="290c4be9-1439-4329-aa9b-7e110538f6d5" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" toAddresses="#[Mule::p('workflow.jde-vertex-salestax.email.report.distribution') splitBy ',']" subject="mulesoft  ${MULE_ENV} - JDE Vertex Monthly Tax Order Export  Invalid Orders Report">
+									<email:body contentType="text/plain" >
+										<email:content ><![CDATA[Team,
+
+Attached Please find the JDE Vertex Monthly Tax  Orders with Validation Error Report.
+
+Thanks  PHSS Business Integrations Services]]></email:content>
+									</email:body>
+									<email:attachments ><![CDATA[#[{'$(vars.errorFileName)': vars.TransactionValidationErrors }]]]></email:attachments>
+								</email:send>
+							</when>
+							<otherwise >
+								<logger level="INFO" doc:name="Logger" doc:id="f65b9770-4683-49ef-a8b0-fa720162567c" message="All JDE transactions passed validation"/>
+							</otherwise>
+						</choice>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="74fb86cc-a356-4cce-bd46-12198b7d9ba7" message="Email Not Send Please check configuration send.email: #[vars.Send_Email]"/>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<email:send doc:name="JDE Vertex No Integration Records Found" doc:id="c18a0643-a229-4211-b137-cfc700d8d947" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MS ${MULE_ENV} - JDE Vertex Synchronization Process No Records to Process">
+					<email:to-addresses >
+						<email:to-address value="john.cordero@redcross.org" />
+					</email:to-addresses>
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[<p>
+
+<h3> No records found </h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+		</choice>
+		<set-variable value="${workflow.jde-vertex-salestax.send.vertex.monthlyreport}" doc:name="Send  JDE Vertex Monthly Report" doc:id="794de8dc-7590-43fb-99f3-f2651aeddc05" variableName="Send_Report"/>
+		<choice doc:name="Choice" doc:id="8a178880-d4b4-482b-9c2c-d42939603ac2" >
+			<when expression='#[((vars.Send_Report default false) == "true")]'>
+				<logger level="INFO" doc:name="Logger" doc:id="fa43a111-be7e-44c6-9edd-bc9f5ca024e8" message="Initialize JDE Vertex Monthly Report"/>
+				<flow-ref doc:name="get-vertex-accesstoken-subflow" doc:id="872f6977-398f-43a5-85c4-07d02b8c6246" name="get-vertex-accesstoken-subflow" target="oAuthAccessTokenData" />
+				<set-payload value="#[vars.taxMonthlyReportJson]" doc:name="Set Payload" doc:id="f9ca828b-8866-4618-bc0a-85edc6ae6782" />
+				<ee:transform doc:name="Transform Message" doc:id="141d3dc3-144f-4d37-9fc4-913c92c02d05">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload groupBy $.DocumentNumber]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="0d794c51-c0df-43f9-aba1-efb88f36467f" message="Group By #[payload]"/>
+				<set-variable value="#[0]" doc:name="Initialize Order Count" doc:id="3a41c774-f28b-46cb-bf74-c0989cdf9200" variableName="NumberOfOrdersProcessed"/>
+				<parallel-foreach doc:name="Parallel For Each" doc:id="7c043b34-cd63-438c-87e5-af454675263c" >
+					<logger level="INFO" doc:name="Logger" doc:id="2c6176dc-8254-4ddd-9787-b00741325080" message="Payload Parallel For Each #[payload]"/>
+					<try doc:name="Try" doc:id="51e7d00a-f272-4201-b238-18b8c011faf8" >
+						<set-variable value="#[(vars.NumberOfOrdersProcessed + 1)]" doc:name="Increment NumberOfOrdersProcessed" doc:id="86b16ea6-85dc-41b0-9954-3be7952b88c7" variableName="NumberOfOrdersProcessed"/>
+						<set-variable value="#[now() as Date {format: 'yyyy-MM-dd'}]" doc:name="ExportDate" doc:id="670a04dd-202b-499b-b1dc-126b4961d16f" variableName="ExportDate" />					
+			 		<ee:transform doc:name="Transform Message" doc:id="eec0bb50-00f4-4786-b730-65736ca062b2">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+			output application/json skipNullOn="everywhere"
+			fun customerCode(payload) = payload[0].CustomerCode default null
+			fun documentNumber(payload) = payload[0].DocumentNumber default null
+			fun transactionDate(payload) = payload[0].TransactionProcessDate as Date {format: 'M/d/yyyy'} as String {format: 'yyyy-MM-dd'} default null
+			fun city(payload) = payload[0].SitusCityName default null
+			fun county(payload) = payload[0].SitusSubDivision default null
+			fun mainDivision(payload) = payload[0].SitusMainDivision default null
+			fun country(payload) = payload[0].SitusCountryCode2 default null
+			fun transactionId(payload) = payload[0].TransactionID default null
+			fun destinationTaxAreaId(payload) = payload[0].DestinationTaxAreaID default null
+			
+			---
+			{
+				customer: {
+					customerCode: {
+						classCode: "Distributors",
+						isBusinessIndicator: true,
+						value: customerCode(payload[0])
+					},
+					destination: {
+						(city: city(payload[0])) if(sizeOf(city(payload[0])) > 0) ,
+						country: country(payload[0]),
+						(subDivision: county(payload[0])) if(sizeOf(county(payload[0])) > 0) ,
+						mainDivision: mainDivision(payload[0]),
+						(taxAreaId: destinationTaxAreaId(payload[0])) if(sizeOf(destinationTaxAreaId(payload[0])) > 0) 
+						
+					},
+					isTaxExempt: false
+				},
+				deliveryTerm: "EXW",
+				documentDate: transactionDate(payload[0]),
+				documentNumber: documentNumber(payload[0]),
+				isTaxOnlyAdjustmentIndicator: false,
+				lineItems: (payload[0] map ( value , key ) -> {
+					extendedPrice: value.ExtendedPrice,
+					lineItemNumber: value.LineItemID as Number,
+					inputTotalTax: value.TaxAmount as Number,
+					lineItemId: value.LineItemID default (key + 1),
+					(nonTaxableOverrides: [
+						{
+							amount : value.ExtendedPrice as Number default 0
+						}
+					]) if (value.TaxResultType == 'Nontaxable'),
+					(exemptOverrides: [
+						{
+							amount : value.ExtendedPrice as Number default 0
+						}
+					]) if (value.TaxResultType == 'No Tax'),
+					flexibleFields: {
+					  flexibleDateFields: [
+					     {
+					          fieldId: 1,
+					          value: vars.ExportDate
+					     }
+					  ]
+					
+					},
+					product: {
+						productClass: value.ProductCode default null,
+						value: value.ProductCode default null
+					},
+					quantity: {
+						"unitOfMeasure": "ea",
+						value: value.Quantity as Number
+					},
+					unitPrice: value.GrossAmount / value.Quantity
+					
+				}),
+				postingDate: transactionDate(payload[0]),
+				returnAssistedParametersIndicator: true,
+				returnGeneratedLineItemsIndicator: true,
+				returnTimeElapsedDetailsIndicator: true,
+				roundAtLineLevel: true,
+				saleMessageType: "DISTRIBUTE_TAX",
+				seller: {
+					administrativeOrigin: {
+						city: "Washington",
+						country: "US",
+						mainDivision: "DC",
+						postalCode: "20006",
+						streetAddress1: "431 18th Street NW"
+					},
+					company: "ANRC",
+					division: "HQ",
+					physicalOrigin: {
+						city: "Washington",
+						country: "US",
+						mainDivision: "DC",
+						postalCode: "20006",
+						streetAddress1: "431 18th Street NW",
+					}
+				},
+				transactionId: transactionId(payload[0]),
+				transactionType: "SALE"
+			}]]></ee:set-payload>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="OriginalOrderItems"><![CDATA[%dw 2.0
+			output application/json
+			---
+			payload]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+						<set-variable value="#[payload]" doc:name="Vertex Request Payload" doc:id="33139191-2d36-404d-9ac5-6c7f70843855" variableName="VertexRequestPayload"/>
+						<set-variable value="JDE" doc:name="Parent Flow to JDE" doc:id="b7867744-4051-4efb-a567-8445977a897b" variableName="ParentFlow"/>
+						<set-variable value="#[payload.documentNumber]" doc:name="Vertex Document Number" doc:id="a51f1c57-ccf6-4e0f-8bd2-38d1a69c2d42" variableName="VertexDocumentNumber"/>
+						<set-variable value="#[payload.transactionId]" doc:name="Vertex Transaction Id" doc:id="eb832a94-6725-44e4-8710-fd3aaae250cb" variableName="VertexTransactionId" />
+					
+			 			<flow-ref doc:name="Submit Vertex Data Flow" doc:id="1e1a700b-b608-4611-a580-195b3fb6ad65" name="submit-vertex-data-flow" />
+						<choice doc:name="Choice" doc:id="c96d1967-d2bf-4275-9736-57fcb63d4756" >
+							<when expression="#[vars.isError == true]">
+								<ee:transform doc:name="Transform Message" doc:id="65770c0c-8d2b-401d-bfcb-104b493aa1a1">
+									<ee:message>
+										<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+
+var body="Team,\n\nAttached Please find the JDE Vertex Monthly Tax  Orders Post Transaction Error JSON payload.\n
+\nStacktrace:\n\n"
+var footer="\n\nThanks PHSS Business Integration Services\n"
+---
+body ++ (vars.ErrorMessage as String default "")++ footer
+]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<email:send doc:name="Send Vertex Transaction Error" doc:id="4b157103-907d-4321-ad79-4bac4544d909" config-ref="AWS_Email_SMTP" toAddresses="#[Mule::p('workflow.jde-vertex-salestax.email.error.distribution') splitBy ',']" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - JDE Vertex Monthly Tax Order Export  Post Transaction Error Report">
+									<email:body contentType="text/plain" >
+									</email:body>
+									<email:attachments ><![CDATA[#[{'DocumentNumber-$(vars.VertexDocumentNumber).json': vars.VertexRequestPayload }]]]></email:attachments>
+								</email:send>
+							</when>
+							<otherwise >
+								<logger level="INFO" doc:name="Logger" doc:id="7ca98205-364b-442d-9ff8-7c6be976f9f7" message="Another Order completed successfullly Document Number #[vars.VertexDocumentNumber]"/>
+							</otherwise>
+						</choice>
+						<error-handler >
+							<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d1556610-30b6-4921-be79-3259f979a699" type="HTTP:SECURITY, HTTP:UNAUTHORIZED">
+								<logger level="INFO" doc:name="Logger" doc:id="da857875-8af8-4d2e-b3d6-9ea0256a0b84" message="Submission of Vertex Data failed. Retrying with new token" />
+								<flow-ref doc:name="generate-new-token-subflow" doc:id="83fcced7-1739-458a-aec7-9c447926ba06" name="generate-new-token-subflow" target="oAuthAccessTokenData"/>
+								<flow-ref doc:name="Resubmit Vertex Data with new token" doc:id="f15a8cee-5592-4331-8fc4-db59f0df7e83" name="submit-vertex-data-flow"/>
+							</on-error-continue>
+						</error-handler>
+					</try>
+				</parallel-foreach>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="1ac055da-c266-403c-9607-994190fa7910" message="Vertex Monthly Report Not Send Please check configuration send.vertex.monthlyreport: #[vars.Send_Report]"/>
+			</otherwise>
+		</choice>
+		<set-variable value="${workflow.vertex-salestax.persist.last.transaction.date}" doc:name="Persist Last Transaction Date" doc:id="69863e62-dc24-4c9a-b18d-410559b560d1" variableName="Persist_Date"/>
+		<choice doc:name="Choice" doc:id="07fda8f9-c73a-4336-8913-cdbd1ea668b3" >
+			<when expression='#[(vars.Persist_Date default false) == "true"]'>
+				<set-variable value="#[now()]" doc:name="LastExecutedDate" doc:id="a3b328a1-a37b-42aa-a5dd-405e302db3fd" variableName="LastTransactionDate"/>
+				<logger level="INFO" doc:name="Storing Last Transaction Date" doc:id="7fdfa326-c0ba-48d7-ae3c-d612658b2a71" message="Storing Last Executed Date of #[vars.lastTransactionDate]" />
+				<os:store doc:name="Store" doc:id="79cc9dbe-b193-4e1d-b417-6d335db7f4d9" objectStore="JDE_Vextex_SalesTax_Object_store" key="TransactionDate">
+			<os:value><![CDATA[#[vars.lastTransactionDate]]]></os:value>
+		</os:store>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="29b78702-c510-42bd-b304-d0952d28eb0a" message=" Vertex Persisting Last Transaction Date  Not persisted, Please check configuration persist.last.transaction.date: #[vars.Persist_Date]"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="NumberOfOrdersProcessed" doc:id="3d45f748-675a-4f06-b010-62a084d84a94" message="Number Of Orders Processed #[vars.NumberOfOrdersProcessed]"/>
+	</flow>
+	<sub-flow name="jde-salestax-validation-subflow" doc:id="d10c890f-379b-42dd-b0b1-60f59b8e5563" >
+		<logger level="INFO" doc:name="Initialize JDE Validation" doc:id="ad83d0f0-4555-468e-87e8-1348de03d38a" message="Validate JDE Payload #[payload]"/>
+		<set-variable value="#[[]]" doc:name="Validated Payload" doc:id="c72fbee7-c1d8-4242-8df6-955737811d03" variableName="ValidatedPayload"/>
+		<foreach doc:name="For Each" doc:id="551fe4ea-12da-4de5-b2c5-0038235d65a3" >
+			<set-variable value="#[false]" doc:name="hasErrors = false" doc:id="f0ea0899-bcd9-4e3e-bdfb-70bb4b6efdb9" variableName="hasErrors"/>
+			<try doc:name="Try" doc:id="af502cb5-c505-401d-970b-be84b6ae374c" >
+				<validation:is-not-blank-string doc:name="Validate that Location information Is not blank string" doc:id="ebc32312-2d6c-4e95-8c7d-179c46c0e6e5" value="#[payload.SitusMainDivision ++ payload.SitusSubDivision ++ payload.SitusCountryCode2]" config-ref="Validation_Config" message="Location Validation Error"/>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="32577164-a17f-42ab-b4dc-57c29b43449b" >
+						<set-variable value="#[true]" doc:name="hasErrors = true" doc:id="5c2f00b1-aed6-4e96-bf1f-f6448dd41182" variableName="hasErrors"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+			<choice doc:name="Choice" doc:id="674736f0-cb63-4196-92fa-c15d4afded7a" >
+				<when expression="#[vars.hasErrors == true]">
+					<ee:transform doc:name="Add isValid:false" doc:id="c8629fb6-2950-427f-b751-c7e1e284ffde" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {isValid:false}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="Payload is Invalid" doc:id="0d0be630-cfc0-4e45-861e-63a37803385e" message="Payload is Invalid #[payload]"/>
+				</when>
+				<otherwise >
+					<ee:transform doc:name="Add isValid:true" doc:id="77f19179-d03b-4b8a-9a24-1835387ebe3a" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {isValid:true}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="Payload is Valid" doc:id="f1dd6038-7796-4cf4-936f-66618ad8a9b0" message="Payload is Valid #[payload]"/>
+				</otherwise>
+			</choice>
+			<ee:transform doc:name="Add payload to ValidatedPayload Array" doc:id="73864fa9-36fd-4bde-b629-25fb979542ba">
+						<ee:message>
+						</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="ValidatedPayload" ><![CDATA[vars.ValidatedPayload << payload]]></ee:set-variable>
+				</ee:variables>
+					</ee:transform>
+		</foreach>
+		<set-payload value="#[vars.ValidatedPayload]" doc:name="Set Payload" doc:id="8ac52611-40b8-4fcd-a3f8-6894dbffac80" />
+		<logger level="INFO" doc:name="Validated Payload" doc:id="78cfdd71-cc64-4cac-9a12-a564713cb569" message="Validated Payload #[payload]" />
+	</sub-flow>
+</mule>

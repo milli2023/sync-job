@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<flow name="oracle-to-sfdc-account-flow" doc:id="d3917794-30d2-4f48-b1b3-6e75220a19a1" >
+		<os:retrieve doc:name="Retrieve" doc:id="7ef3ac1e-d8c2-4506-bdfb-4a2da5b544e8" key="LastExecutedDate" objectStore="CFS_Oracle_Object_store">
+			<os:default-value ><![CDATA[${workflow.oracle.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Logger" doc:id="4304a12c-e751-44c9-896f-913aee1870e2" message="Last Execution Date #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="b4d6599d-4e15-4867-a047-99746e1fb0c3" variableName="lastExecutedDate"/>
+		<db:select doc:name="Select From Oracle" doc:id="6246cc04-99f2-4644-b606-c9e4980d3d43" config-ref="Oracle_Database_Config">
+			<db:sql ><![CDATA[Select * From APPS.ARC_EXT_SF_CUSTOMER_MAPPING_V  Where CREATION_DATE > to_date(:LastExecutedDate, 'yyyy-mm-dd"T"hh24:mi:ss') Order By LAST_UPDATE_DATE]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{	"LastExecutedDate" : vars.lastExecutedDate}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="1d48cfbb-6d9f-4b7a-ae28-6fc7c27a92a6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	CFS_CUSTOMER_NUMBER: payload01.CFS_CUSTOMER_NUMBER,
+	ORIG_SYSTEM_REFERENCE: payload01.ORIG_SYSTEM_REFERENCE,
+	CUSTOMER_NAME: payload01.CUSTOMER_NAME,
+	CREATION_DATE: payload01.CREATION_DATE,
+	LAST_UPDATE_DATE: payload01.LAST_UPDATE_DATE
+}
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e78c7866-1de8-4f95-8ec2-4370d72cbad8" message="Results from Oracle View #[payload]"/>
+		<choice doc:name="Choice" doc:id="434d65db-767d-49af-b016-94bde2c9a5fd" >
+			<when expression="sizeOf(payload) != 0">
+					<foreach doc:name="For Each" doc:id="8ed4cb5e-1fb6-4772-99ca-f00c4b40a108" >
+						<logger level="INFO" doc:name="Logger" doc:id="3af875ab-f633-440a-90e8-123cba928fed" message="Working On  #[payload]" />
+						<flow-ref doc:name="Oracle to SFDC Account Select Flow" doc:id="2fcd8663-71d4-40a5-821f-417eea9bd358" name="oracle-to-sfdc-account-select-flow"/>
+					<choice doc:name="Choice" doc:id="8d4a9b5a-a69f-4ea8-94e5-27d84e2e5903" >
+							<when expression="sizeOf(payload) &gt; 1">
+								<logger level="INFO" doc:name="Logger" doc:id="e26c7d79-7c61-4dfc-ba87-7d7ff67e5006" message="Multiple Accounts Found" />
+							
+							<ee:transform doc:name="Transform Message" doc:id="dfbe6d2f-4aad-4520-b474-20c9bdc7269c" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	Id: payload01.Id as String,
+	CFS_Account_Number_1__c: payload01.CFS_Account_Number_1__c as String,
+	nk_billto_org_id__c: payload01.nk_billto_org_id__c as String
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<logger level="INFO" doc:name="Logger" doc:id="77da6c29-2d15-492e-b301-f2a168258796" message="Duplicate Accounts in SFDC #[payload]"/>
+								<email:send doc:name="MS - Oracle Update Salesforce Account Process Error - Multiple Salesforce Accounts" doc:id="619a22eb-5682-4fd4-810e-578dd0a1a857" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - Oracle Update Salesforce Account Process Error - Multiple Salesforce Accounts">
+									<email:to-addresses>
+										<email:to-address value="john.cordero@redcross.org" />
+									</email:to-addresses>
+									<email:body contentType="text/html">
+									<email:content ><![CDATA[
+<b>Attached  are the Salesforce Accounts that have the Same ORIG_SYSTEM_REFERENCE Number.</b><br><br>
+
+]]></email:content>
+											</email:body>
+								<email:attachments ><![CDATA[#[{
+  'Multiple-Salesforce-Accounts.csv' : payload
+}]]]></email:attachments>
+								</email:send>
+							</when>
+							<when expression="sizeOf(payload) == 1">
+							<flow-ref doc:name="Oracle To SFDC Account Update Flow" doc:id="a14331fa-e5ac-4cba-aa14-2c9b08da7ee6" name="oracle-to-sfdc-account-update-flow"/>
+							<logger level="INFO" doc:name="Logger" doc:id="06f50fd8-9a80-4651-b043-f41ad03a2cce" message="*** Updated the SFDC Account #[payload]" />
+								</when>
+							<otherwise >
+								<logger level="INFO" doc:name="Logger" doc:id="56882196-9930-47e8-8c0a-de6067567af7" message="SFDC Account Not Found #[vars]"/>
+								<ee:transform doc:name="Transform Message" doc:id="9d8c351b-6378-4d64-969f-785fd5085c6b" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+{"CFS_CUSTOMER_NUMBER":vars.CFS_CUSTOMER_NUMBER, "NK_BILLTO_ORG_ID": vars.nk_billto_org_id__c  }]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<logger level="INFO" doc:name="Logger" doc:id="298d8176-3b33-471d-bf80-ecf4fa5df2e3" message="Missing Accounts in SFDC #[payload]" />
+								<email:send doc:name="MS - Oracle Update Salesforce Account Process Error - Salesforce Account Not Found for CFS  ORIG_SYSTEM_REFERENCE" doc:id="c30651ba-b9a3-4944-8788-348c58e3b53d" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} -  Oracle Update Salesforce Account Process Error - Salesforce Account Not Found for CFS  ORIG_SYSTEM_REFERENCE">
+									<email:to-addresses>
+										<email:to-address value="john.cordero@redcross.org" />
+									</email:to-addresses>
+									<email:body contentType="text/html">
+									<email:content ><![CDATA[
+<b>Attached is the CFS Account that was not found on Salesforce.</b><br><br>
+
+]]></email:content>
+											</email:body>
+								<email:attachments ><![CDATA[#[{
+  'CFS-Account-Not-Found-On-Salesforce.csv' : payload
+}]]]></email:attachments>
+								</email:send>
+							</otherwise>
+						</choice>
+						
+					</foreach>
+					<logger level="INFO" doc:name="Logger" doc:id="de138cf4-6971-4011-9e20-4ffd148ac156" message="Storing Last Executed Date of #[vars.LastExecutedDate]" />
+					<os:store doc:name="Store" doc:id="8645c628-077e-4f3c-a886-b2c05695e474" objectStore="CFS_Oracle_Object_store" key="LastExecutedDate">
+			<os:value><![CDATA[#[vars.LastExecutedDate]]]></os:value>
+		</os:store>
+			</when>
+			<otherwise >
+				<email:send doc:name="MS - Oracle Update Salesforce Account Process Warning - CFS Oracle to Salesforce Account No Records to Process" doc:id="c03945f2-74f0-4d11-b512-2eb55e57f351" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} -  Oracle Update Salesforce Account Process Warning - CFS Oracle to Salesforce Account No Records to Process">
+					<email:to-addresses >
+						<email:to-address value="john.cordero@redcross.org" />
+					</email:to-addresses>
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[<p>
+
+<h3> No records found for  CFS Oracle to Salesforce Account P-Number</h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+
+		</choice>
+	</flow>
+	<sub-flow name="oracle-to-sfdc-account-initialize-vars-subflow" doc:id="fcf3b1d1-7219-4153-9bbf-0d3ec4904755" >
+		<set-variable value="#[payload.LAST_UPDATE_DATE]" doc:name="LastExecutedDate" doc:id="79d6eca3-38b5-4a17-85db-3035e168292e" variableName="LastExecutedDate" />
+		<set-variable value="#[payload.CFS_CUSTOMER_NUMBER]" doc:name="CFS_CUSTOMER_NUMBER" doc:id="616de7ec-97e9-4d7d-a798-2277b6e1a809" variableName="CFS_CUSTOMER_NUMBER" />
+		<set-variable value="#[payload.ORIG_SYSTEM_REFERENCE]" doc:name="nk_billto_org_id__c" doc:id="90a7ee2f-a92a-4b6f-920f-4bed8ee34d73" variableName="nk_billto_org_id__c" />
+	</sub-flow>
+	<flow name="oracle-to-sfdc-account-select-flow" doc:id="22670020-772a-4e1d-b61a-12051244836c" >
+		<flow-ref doc:name="Oracle to SFDC Account Initialize Vars SubFlow Reference" doc:id="af5244a8-8bb5-4b09-a198-9377a117f94a" name="oracle-to-sfdc-account-initialize-vars-subflow" />
+		<salesforce:query doc:name="Query Account" doc:id="f67f950b-ab14-476e-9ee3-9d65d3f95793" config-ref="Salesforce_Config">
+							<reconnect />
+			<salesforce:salesforce-query><![CDATA[SELECT 
+Id,
+OwnerId,
+Name,
+ParentId,
+This_is_HQ__c,
+Status__c,
+ccrz__E_AccountGroup__c,
+Phone,
+Extension__c,
+PHSS_Channel__c,
+Credit_Limit__c,
+Preferred_Payment_type__c,
+Payment_Status__c,
+Payment_Terms__c,
+Tax_Exempt__c,
+Tax_ID_Number__c,
+Invoice_Delivery_Type__c,
+Invoice_delivery_Email__c,
+Invoice_Template__c,
+Customer_PO_Required_on_Invoice__c,
+Restrict_Order_Confirmation_Email__c,
+Invoice_Delivery_Frequency__c,
+Separate_Invoice_For_Products__c,
+CFS_Account_Number_1__c,
+nk_billto_org_id__c 
+FROM Account
+Where nk_billto_org_id__c = ':nk_billto_org_id__c']]>
+						</salesforce:salesforce-query>
+							<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"nk_billto_org_id__c" : vars.nk_billto_org_id__c
+}]]]></salesforce:parameters>
+						</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="5da16af9-760e-49b5-8611-4815f25f5e99">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f5e44e79-2430-4a87-9547-89e1658d867e" message="Results from SFDC Query #[payload]" />
+	</flow>
+	<flow name="oracle-to-sfdc-account-update-flow" doc:id="d7051c34-0edf-4b88-9e4e-8cc9c64af5f6">
+	
+					<ee:transform doc:name="Transform Message" doc:id="bd0d3219-f5b3-4e3f-b2c5-e8421105d419">
+									<ee:message>
+										<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	Id: payload01.Id,
+	OwnerId: payload01.OwnerId,
+	Name: payload01.Name,
+	ParentId: payload01.ParentId,
+	Status__c: payload01.Status__c,
+	ccrz__E_AccountGroup__c: payload01.ccrz__E_AccountGroup__c,
+	Phone: payload01.Phone,
+	Extension__c: payload01.Extension__c,
+	PHSS_Channel__c: payload01.PHSS_Channel__c,
+	Credit_Limit__c: payload01.Credit_Limit__c,
+	Payment_Status__c: payload01.Payment_Status__c,
+	Payment_Terms__c: payload01.Payment_Terms__c,
+	Tax_Exempt__c: payload01.Tax_Exempt__c,
+	Tax_ID_Number__c: payload01.Tax_ID_Number__c,
+	Invoice_Delivery_Type__c: payload01.Invoice_Delivery_Type__c,
+	Invoice_delivery_Email__c: payload01.Invoice_delivery_Email__c,
+	Invoice_Template__c: payload01.Invoice_Template__c,
+	Invoice_Delivery_Frequency__c: payload01.Invoice_Delivery_Frequency__c,
+	CFS_Account_Number_1__c: vars.CFS_CUSTOMER_NUMBER,
+	nk_billto_org_id__c: vars.nk_billto_org_id__c
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<logger level="INFO" doc:name="Logger" doc:id="0f35fdd6-5259-44cc-9955-fd62bb5c8f06" message="SFDC Account Updating  #[payload]"/>
+	
+									<try doc:name="Try" doc:id="43d9a34e-c1c9-4aac-a709-07239ed571ae">
+									<!-- <salesforce:upsert objectType="Account" externalIdFieldName="Id" doc:id="3a7011c0-b213-4959-a191-3167d8f370fd" config-ref="Salesforce_Config" doc:name="Upsert Account CFS Number" target="payload">
+								</salesforce:upsert> -->
+									<salesforce:update type="Account" doc:name="Update" doc:id="4b4301bd-9d37-4be4-b394-41b7ed659fd0" config-ref="Salesforce_Config">
+				<reconnect />
+			</salesforce:update>
+			<error-handler >
+										<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="503de4a9-cb2e-4dc1-87b9-92b2492aa6b9" >
+											<logger level="ERROR" doc:name="Logger" doc:id="a0a2dab8-d98e-4010-a2f9-5fb37d2b9237" message="Account Update Error #[payload]"/>
+										<email:send doc:name="MS - Oracle Update Salesforce Account Process Error - CFS Oracle to Salesforce Account Update Process Error" doc:id="86f2c5fe-34e0-4bbd-a302-8b15bf077eb3" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - Oracle Update Salesforce Account Process Error - CFS Oracle to Salesforce Account Update Process Error">
+						<email:to-addresses>
+							<email:to-address value="john.cordero@redcross.org" />
+						</email:to-addresses>
+						<email:body contentType="text/html">
+								</email:body>
+					</email:send>
+										</on-error-continue>
+									</error-handler>
+								</try>
+								<ee:transform doc:name="Parse SF Response" doc:id="23bf7ddb-79fb-435c-92f0-258e30096577" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+								
+	</flow>
+</mule>

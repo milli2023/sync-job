@@ -1,0 +1,102 @@
+https:
+  connection.timeout: "1200000"
+  response.timeout: "1200000"
+  secure.port: "8083"
+
+objectstore: 
+  expiration.minutes: "1440"
+  entryttl.seconds: "86400"
+  entryttl.hours: "1"
+  maxentries: "1"  
+  
+workflow:
+  cfs-oracle:
+    last.executed.date: "2022-03-09T04:15:06.756Z"
+    scheduler.interval: "0 15 4 ? * *"
+    timezone: "America/New_York"
+  cfs-sftp:
+    last.executed.date: "2022-04-20T03:15:10.965Z"
+    scheduler.interval: "0 15 3 ? * *"
+    timezone: "America/New_York"
+    email:
+      report.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,laurie.barone@redcross.org,jamie.weingard@redcross.org,CFSTECHNICAL@redcross.org,kara.desmarais@redcross.org,TaxCOESSC@redcross.org,dalia.dinkins@redcross.org"
+      norecords.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,jamie.weingard@redcross.org,CFSTECHNICAL@redcross.org,kara.desmarais@redcross.org,dalia.dinkins@redcross.org"
+      error.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org"
+  rco-sftp:
+    last.executed.date: "2022-03-04T15:28:35.283Z"
+    scheduler.interval: "0 10 10,13,16,19,22 ? * *"
+    timezone: "America/New_York"
+  salesforce-ar-aging:    
+    scheduler:
+      ecom:
+        interval: "0 30 6 ? * *"               
+        frequency: "24"
+        timezone: "America/New_York"
+      ts:
+        interval: "0 10 6 ? * *"
+        timezone: "America/New_York"  
+  salesforce-open-order:
+    last.executed.date: "2022-01-20T16:01:31.000Z"
+    scheduler.interval: "0 10 10,13,16,19,22 ? * *"
+    timezone: "America/New_York"
+  account:
+    last.executed.date: "2022-01-23T19:26:48.000Z"
+    scheduler.interval: "0 2 11 * * ?"
+    timezone: "America/New_York"
+    email:
+      distribution: "john.cordero@redcross.org, margot.alloway@redcross.org, EBSProductionSupport@redcross.org, SSCNC@redcross.org, kara.desmarais@redcross.org"
+  oracle:
+    last.executed.date: "2022-02-21T10:00:04"
+    scheduler.interval: "0 0 7 ? * *"
+    timezone: "America/New_York"
+    email:
+      distribution: "john.cordero@redcross.org, margot.alloway@redcross.org, EBSProductionSupport@redcross.org, SSCNC@redcross.org, kara.desmarais@redcross.org"
+  salesforce:
+    last.executed.date: "2022-01-20T16:01:31.000Z"
+    scheduler.interval: "0 15 6 ? * *"
+    timezone: "America/New_York"
+  salestax:    
+    last.executed.date: "2022-01-22T22:00:16.000Z"    
+    scheduler.interval: "0 0 1 ? * *"
+    timezone: "America/New_York"
+    email:
+      report.distribution: "john.cordero@redcross.org,milli.ketera@redcross.org"
+      norecords.distribution: "john.cordero@redcross.org,milli.ketera@redcross.org"
+      error.distribution: "john.cordero@redcross.org,milli.ketera@redcross.org" 
+  vertex-salestax:
+    last.executed.date: "2022-06-11T00:00:00.000Z"
+    scheduler.interval: "0 0 6 ? * *"
+    timezone: "America/New_York"
+    send.email: "true"
+    send.vertex.monthlyreport: "true"
+    persist.last.transaction.date: "true"
+    email:
+      report.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,darren.fish@redcross.org,marie.chesley@redcross.org,jeffrey.woodall@redcross.org,patti.bopp@redcross.org,keith.wilson@vertexinc.com,steven.morse@vertexinc.com,TaxCOESSC@redcross.org,phss_mulesoft_team@redcross.org"
+      norecords.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,darren.fish@redcross.org,marie.chesley@redcross.org,keith.wilson@vertexinc.com,steven.morse@vertexinc.com,TaxCOESSC@redcross.org,phss_mulesoft_team@redcross.org"
+      error.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,darren.fish@redcross.org,marie.chesley@redcross.org,keith.wilson@vertexinc.com,steven.morse@vertexinc.com"
+
+  jde-vertex-salestax:
+    last.executed.date: "2022-06-01T00:00:00.000Z"
+    scheduler.interval: "0 0 6 ? * *"
+    timezone: "America/New_York"
+    send.email: "true"
+    send.vertex.monthlyreport: "true"
+    persist.last.transaction.date: "true"
+    email:
+      report.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,marie.chesley@redcross.org,jeffrey.woodall@redcross.org,patti.bopp@redcross.org,keith.wilson@vertexinc.com,steven.morse@vertexinc.com,TaxCOESSC@redcross.org,phss_mulesoft_team@redcross.org"
+      norecords.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,marie.chesley@redcross.org,keith.wilson@vertexinc.com,steven.morse@vertexinc.com,TaxCOESSC@redcross.org,phss_mulesoft_team@redcross.org"
+      error.distribution: "john.cordero@redcross.org,margot.alloway@redcross.org,marie.chesley@redcross.org,keith.wilson@vertexinc.com,steven.morse@vertexinc.com,phss_mulesoft_team@redcross.org"
+     
+smtpemail:
+  host: "email-smtp.us-east-1.amazonaws.com"
+  port: "587"
+  user: "AKIAIZJMN6SNBBZW563Q"
+  password: "![3KEy+6C42aRfBB8vG6Sviakuvi+oG779PelZzsc06Oh+cb17mTDp737PhmuS9FBO]"
+  distribution: "phss_mulesoft_team@redcross.org,mike.smith2@redcross.org,Kara.Desmarais@redcross.org,wendy.firdman@redcross.org,sue.franson@redcross.org" 
+  reconnection:
+    attempts: "3"
+    frequency: "6000"
+  bodyType: "text/html"
+  tableCss: "table,td,th{border:1px solid #000;border-collapse:collapse}td,th{padding:5px;text-align:left}"
+
+      

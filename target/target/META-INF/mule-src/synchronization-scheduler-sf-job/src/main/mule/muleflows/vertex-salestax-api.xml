@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<sub-flow name="get-vertex-accesstoken-subflow" doc:id="a0fa01a6-9eb9-4a9c-91e4-5f07087191cf" >
+		<os:retrieve doc:name="Retrieve Existing Vertex OAuth Token" doc:id="945f6517-94aa-4c4b-978e-ffd97b2c067d" key="oAuthToken" objectStore="Vertex_OAuth_Object_store">
+			<os:default-value ><![CDATA[#['']]]></os:default-value>
+		</os:retrieve>
+		<choice doc:name="Cached Token Exists?" doc:id="5fa7b66d-fe3d-494b-b3c8-7d9be77552ed" >
+			<when expression="#[isEmpty(payload)]">
+				<flow-ref doc:name="generate-new-vertex-token-subflow" doc:id="c803f24d-7dc7-4a8a-9b56-f423d3c00657" name="generate-new-vertex-token-subflow"/>
+			
+</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="7b6a4c86-9270-45ac-9f9e-2c7445e24aa6" message="#[vars.loggingIdentifier] Reusing cached Vertex oAuth Token #[payload]"/>
+			</otherwise>
+		
+</choice>
+	</sub-flow>
+	<sub-flow name="generate-new-vertex-token-subflow" doc:id="687912e2-9c28-40e7-9d9c-7ca0d0cd01f2" >
+		<ee:transform doc:name="Transform Message" doc:id="eacca021-5c5c-4c16-b4aa-8eb3c76f00b0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{	
+	client_id : p('secure::vertex.client_id'),
+	client_secret : p('secure::vertex.client_secret'),
+	grant_type : p('vertex.grant_type'),
+	scope: p('vertex.scope')
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="89da6c83-e292-4a84-808b-bd16443d9761" message="Vertex OAuth Payload #[payload]"/>
+		<http:request method="POST" doc:name="Get Token" doc:id="4f692f2f-58c6-47df-8d36-230f01a5fbf0" config-ref="HTTP_Vertex_Login_Request_configuration" path="${vertex.oauth.enpoint}" >
+			<reconnect />
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/x-www-form-urlencoded"
+}]]]></http:headers> 
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="7a2280b8-0267-48f6-a873-3acef3b046cc" message="#[vars.loggingIdentifier] Generated new oAuth Token #[payload]" />
+		<ee:transform doc:name="Transform Token Data" doc:id="af136095-e27e-413c-b2f0-54f3f320b232" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<os:store doc:name="Store oAuthToken" doc:id="c9fb2bd4-b084-45bd-93c5-6f0d5b7006d3" key="oAuthToken" objectStore="Vertex_OAuth_Object_store" />
+	</sub-flow>
+
+	<sub-flow name="submit-vertex-data-flow" doc:id="2a285dc1-e33d-4160-b0ab-88274a440996">
+		<logger level="INFO" doc:name="Logger" doc:id="f0c603a6-8f70-4159-b70c-eba5e24e9515" message="Flow [#[vars.ParentFlow]]  Vertex Payload to Submit: Transaction #[vars.VertexTransactionId ] payload: #[payload]" />
+		<!-- <set-variable value="#[2]" doc:name="NumberOfOrdersProcessed Override" doc:id="6f605442-8677-42bd-a2aa-00cd43568fb2" variableName="NumberOfOrdersProcessed"/> -->
+		<set-variable value="#[false]" doc:name="isError = false" doc:id="08d11dbb-2e67-4154-9e7f-78b26bfc00e6" variableName="isError"/>
+		<try doc:name="Try" doc:id="6dc89c9b-7575-477b-afe1-5250582f28e9">
+			<http:request method="POST" doc:name="Submit Vertex Month Report" doc:id="f3e6318b-170d-432a-bd5f-00eeaf942de1" path="${vertex.supplies.endpoint}" config-ref="HTTP_Vertex_Supplies_Request_configuration" outputMimeType="application/json">
+			<error-mapping targetType="TAX:VERTEX_API" />
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	Authorization : (vars.oAuthAccessTokenData.token_type default 'Bearer') ++ ' ' ++ (vars.oAuthAccessTokenData.access_token default ''),
+	"Content-Type" : "application/json"
+}]]]></http:headers>
+		</http:request>
+			<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="38a491f9-f00b-41b0-bce7-4a2f364651ea" >
+					<set-variable value="#[true]" doc:name="isError = true" doc:id="88791837-20e5-4d51-9034-2ed9d15df14c" variableName="isError"/>
+					<ee:transform doc:name="ErrorMessage" doc:id="5981fbf4-b1c6-49dc-b9aa-d239cda9a667" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="ErrorMessage" ><![CDATA[%dw 2.0
+output text/plain
+---
+write(error, 'application/json')]]></ee:set-variable>
+							<ee:set-variable variableName="statusCode" ><![CDATA[error.errorMessage.attributes.statusCode]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<logger level="ERROR" doc:name="Logger" doc:id="9fcad30c-c1a0-4f94-8d55-71a4766a9742" message="Status Code #[ vars.statusCode] Failed to invoke Vertex Monthly Report #[vars.VertexDocumentNumber] -  #[error]" />
+				</on-error-continue>
+			</error-handler>
+		</try>
+		
+		<choice doc:name="Choice" doc:id="0786c735-f972-46c9-b58b-a6d89921df5e">
+			<when expression='#[vars.isError == true and vars.statusCode  == 400]'>
+				<logger level="INFO" doc:name="Logger" doc:id="8544fe45-e15f-4736-8eb7-9cc63083d192" message="Sending Vertex Transaction Error Report for Flow #[vars.ParentFlow] - Document Number: #[vars.VertexDocumentNumber] - #[payload]"/>
+			</when>
+			<when expression="#[vars.isError == true]">
+				<set-variable value="#[false]" doc:name="isError = false" doc:id="4e8fe5da-ed62-41af-b04b-09f5a09564f7" variableName="isError"/>
+				<logger level="INFO" doc:name="Logger" doc:id="139b7b55-d5a7-4750-80e8-2d779948fdd0" message="Analyze Vertex Transaction Error Report for Flow #[vars.ParentFlow] - Document Number: #[vars.VertexDocumentNumber] - #[payload]"/>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Final Payload" doc:id="fb091a78-7bf8-49eb-b011-a163c82a863c">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="c679d148-f7a9-40f4-8e2b-77ff300db2c1" message="Final Response: #[payload]" />
+			</otherwise>
+		</choice>
+
+</sub-flow>
+	<flow name="persist-transactionid-sfdc-tax-order-export" doc:id="c86998ca-70df-4c33-90df-e420ced90ada">
+		<set-variable value="#[payload]" doc:name="InboundPayload" doc:id="6c151e98-b69b-4272-9b43-40c5531b8aa5" variableName="InboundPayload" />
+		<logger level="INFO" doc:name="Logger" doc:id="e82ea67a-df98-4020-818a-623c4bedbb47" message="Persisting Vertex Transaction Id #[vars.VertexTransactionId]" />
+		<ee:transform doc:name="Transform Message" doc:id="ac3b1d54-4e39-4371-aaa6-47cbe8f31118">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+
+fun divideNumber(orderItems) = if(sizeOf(orderItems) > 150) 
+						round(sizeOf(orderItems) / 150)
+					 else
+					    1
+
+output application/json
+---
+(vars.OriginalOrderItems[0] map ( payload01 , indexOfPayload01 ) -> {
+	Id: payload01.Id,
+	Vertex_Batch_Export_Date__c: null,
+	vertex_batch_id__c: vars.VertexTransactionId
+} default []) divideBy divideNumber(vars.OriginalOrderItems[0] default [])]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="8edbb167-f4ed-4292-9cdf-7fbe6b365735" >
+			<logger level="INFO" doc:name="Logger" doc:id="284f13a1-b00c-45be-b903-00345999d8e6" message="Tax Order Export Items to Update #[payload]" />
+			<try doc:name="Try" doc:id="fb194fbe-9ad2-4484-af4a-62de0db157cd">
+			<salesforce:upsert doc:name="Tax_Order_Export__c" doc:id="7afe187b-746d-408a-af3d-44f30547a35c" config-ref="Salesforce_Config" objectType="Tax_Order_Export__c" externalIdFieldName="Id">
+				<reconnect />
+			</salesforce:upsert>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="feb48fee-6aeb-4348-b982-6aeb638eab5a">
+					<logger level="INFO" doc:name="Logger" doc:id="a2274c46-f3fd-4498-8189-a7120c948c95" message="Error Upserting Tax_Order_Export__c #[message]" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		</parallel-foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="dbedd42d-d13a-4692-9534-938268d34eb5" message="Tax_Order_Export Vertex Transaction Id Update Results #[message]" />
+		<set-payload value="#[vars.InboundPayload]" doc:name="Outbound Payload" doc:id="c7125915-a015-4726-aa7b-5e430c373326" />
+	</flow>
+		<flow name="persist-exported-date-sfdc-tax-order-export" doc:id="91f98944-dff2-40a2-8b28-58b6c072a6b6">
+		<set-variable value="#[payload]" doc:name="InboundPayload" doc:id="74ee31cf-7f05-4c05-8cd9-5889103f51f3" variableName="InboundPayload" />
+		<logger level="INFO" doc:name="Logger" doc:id="720bed9b-34ec-47dc-ad60-8ee60222fcb1" message="Persisting Vertex Transaction Id #[vars.VertexTransactionId]" />
+		<ee:transform doc:name="Transform Message" doc:id="f539f39b-a52d-4e99-a1a8-c8bb74630222">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+
+fun divideNumber(orderItems) = if(sizeOf(orderItems) > 150) 
+						round(sizeOf(orderItems) / 150)
+					 else
+					    1
+output application/java
+---
+(vars.OriginalOrderItems[0] map ( payload01 , indexOfPayload01 ) -> {
+	Id: payload01.Id,
+	Vertex_Batch_Export_Date__c: vars.ExportDate as Date default null
+} default []) divideBy divideNumber(vars.OriginalOrderItems[0]  default [])]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="3ebad479-eb0d-4478-9225-4363e676394b" >
+			<logger level="INFO" doc:name="Logger" doc:id="266a6bf2-30fe-4916-b68b-d18ade1a21a4" message="Tax Order Export Items to Update #[payload]" />
+			<try doc:name="Try" doc:id="84fd2224-7ab7-4f92-a9a2-82518f534a91">
+						<salesforce:upsert doc:name="Tax_Order_Export__c" doc:id="a94134d7-5e54-4635-a165-bf2813967b4d" config-ref="Salesforce_Config" objectType="Tax_Order_Export__c" externalIdFieldName="Id">
+				<reconnect />
+			</salesforce:upsert>
+						<error-handler>
+							<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="23e45f4b-5964-414c-b800-81b1eb042047">
+								<logger level="INFO" doc:name="Logger" doc:id="1d127018-ffcc-4fdf-851d-892e1657c973" message="Error Upserting Tax_Order_Export__c #[message]" />
+							</on-error-propagate>
+						</error-handler>
+					</try>
+		</parallel-foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="bc2b09f5-162a-40e3-8c98-b23bda51992d" message="Tax_Order_Export Vertex Export Date  Update Results #[message]" />
+		<set-payload value="#[vars.InboundPayload]" doc:name="Outbound Payload" doc:id="e9380bca-5566-451e-a49a-7f1c91229863" />
+	</flow>
+</mule>

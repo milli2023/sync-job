@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp"
+	xmlns:sharepoint="http://www.mulesoft.org/schema/mule/sharepoint"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sharepoint http://www.mulesoft.org/schema/mule/sharepoint/current/mule-sharepoint.xsd
+http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<flow name="sftp-sfdc-TSORD-flow" doc:id="cb067196-d6c1-4244-9c50-d083a86bfaf1" >
+		
+		<sftp:list doc:name="List TSORDS-Files" doc:id="52d32e4d-b481-45fa-aa9a-caca58e8a263" config-ref="TS_SFTP_Config" directoryPath="/out">
+			<reconnect frequency="3000" count="3" />
+			<sftp:matcher timeUnit="HOURS" filenamePattern="TSORDS*"/>
+		</sftp:list>
+		<sftp:read doc:name="retrive TSORD file" doc:id="1b4711e8-3d58-4908-ad14-052b5455b298" config-ref="TS_SFTP_Config" path="#[((payload.typedAttributes orderBy(($.timestamp))).fileName)[-1]]" outputMimeType="application/csv">
+			<reconnect frequency="3000" count="3" />
+		</sftp:read>
+		<logger level="INFO" doc:name="after sftp retrive" doc:id="d5be6dcc-1234-4069-a1d6-6275bb80f319" message="after sftp retrive #[sizeOf(payload)]" />
+		
+		<ee:transform doc:name="record variable" doc:id="a2fd686d-f153-43fd-ad59-9f94853fe714" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="pulledRecords" ><![CDATA[%dw 2.0
+output application/xlsx header=true
+---
+{sheet1: payload}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="source-target transformation" doc:id="4abe29b2-6cc0-4c42-b385-f671b4a9cc60">
+			<ee:message>
+				<ee:set-payload><![CDATA[output application/csv lineSeparator = "\n" , escape = "" , quoteValues = true
+---
+payload map (payload1,index)-> {
+	CC_Order__c: payload1."CC Order",
+	CFS_InvoiceCredit__c: payload1."CFS Invoice/Credit",
+	Invoice_Amount__c: payload1."Invoice Amount",
+	Invoice_Date__c: payload1."Invoice Date" as Date,
+	SFDC_Account__c: payload1."SFDC Account",
+	Status__c: payload1.Status
+	//Id: (vars.retriveOpenOrderSFID filter ($."SF_Account_Number__c" == payload1."SFDC Account")).Id
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="flowName" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.fileName]]></ee:set-variable>
+			</ee:variables>
+		
+</ee:transform>
+					<logger level="INFO" doc:name="before sfdc bulk update" doc:id="8efc058b-cbe1-406e-9167-bcdf6f29fd28" message="before sfdc bulk update #[sizeOf(payload)]" />
+		<salesforce:create-job-bulk-api-v2 doc:name="TSORD sfdc update" doc:id="7fc6a422-779b-4b2f-aa56-597785fbaa3a" config-ref="Salesforce_Config" objectType="Open_Order_Processing__c" operation="upsert" externalIdFieldName="SFDC_Account__c">
+				<reconnect frequency="3000" count="3" />
+			</salesforce:create-job-bulk-api-v2>
+		<logger level="INFO" doc:name="after bulk update" doc:id="0b45b325-a89d-4932-872f-b00e4e65e2c6" message="after bulk update #[sizeOf(payload)]" />
+		
+		<try doc:name="Try" doc:id="9ab6fdc5-038a-4eca-aae9-e70bbe4f3843" >
+			<sftp:write doc:name="upload the record into sftp" doc:id="1309dd70-985f-4d4c-87ad-be71898c3b3e" config-ref="Mulesoft-araging-archive-sftp-config" path='#["TSORDS/TSORDS" ++ now() ++ ".xlsx"]'>
+				<sftp:content ><![CDATA[#[vars.pulledRecords]]]></sftp:content>
+			</sftp:write>
+			<logger level="INFO" doc:name="Logger after uploading the recored into sftp archive" doc:id="14a1ab9a-6523-466f-a65f-6bff70b432ca" message="after uploading the recored into sftp archive "/>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="bf3f70e0-d7d9-4551-a792-4338de016085" >
+					<logger level="INFO" doc:name="after sftp archive job failed" doc:id="978c5e43-1370-411e-9ed9-3d87fb8c0ec5" message="uploading the recored into sftp archive failed  " />
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="after sharepoint update" doc:id="3fe53f92-b3a0-40eb-8d5c-42fe6b82ac36" message="after sharepoint update #[sizeOf(payload)]"/>
+		<async doc:name="Async" doc:id="294c0a41-9e6f-41fa-9b20-fc335af7d97f">
+			<flow-ref doc:name="success email notification" doc:id="4a0be5c4-fe89-489f-b154-72e4882f95fb" name="tsordsuccessNotificationEmail" />
+		
+</async>
+		<error-handler ref="api-error-handler" />
+	
+</flow>
+<sub-flow name="tsordsuccessNotificationEmail" doc:id="942b5148-b193-4c4b-8674-1994461c2a4a" >
+		<logger level="INFO" doc:name="before success email" doc:id="b9c951b6-d9fe-4088-9bc4-137375a73fc3" message="before success email #[sizeOf(payload)]"/>
+		<ee:transform doc:name="prepare succes email" doc:id="76917667-6c47-4c2d-ac64-b0cd457d6e21">
+					<ee:message />
+					<ee:variables>
+				<ee:set-variable variableName="emails" ><![CDATA[%dw 2.0
+output text/plain
+var correlationId = if (not isEmpty(vars.correlationId)) vars.correlationId else correlationId
+var na = "N/A"
+---
+
+"<html><head><style>" ++ p("smtpemail.tableCss") ++ "</style></head>" ++
+"<body>" ++
+"<h2>This is an automated notification email generated by Mulesoft CFS AR Aging flow.  Please do not reply to this message.</h2>" ++
+
+"<h3>Successful Flow Notification</h3><hr>" ++
+
+"<p>Timestamp: " ++ (now() as DateTime >> "UTC") ++ "</p><hr>" ++
+"<p>App Name: " ++ (app.name default na ) ++ "</p>" ++
+"<p>Component Name: " ++ (vars.flowName default na ) ++ "</p>" ++
+"<p>Correlation ID: " ++ correlationId ++ "</p><hr>" ++
+"<p>Attached:"  ++ "Please find the attached for the archived record" ++ "</p><hr>" ++
+"<p>Thank you:"  ++ "PHSS Business Integrations Services" ++ "</p>" ++
+"</body></html>"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+		<email:send doc:name="successEmailNotification " doc:id="c3f51acf-d9cf-4ca7-b3ed-40771a3b867c" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - TSORDS File successfully posted into salesforce and SFTP-Archive with transaction reference ids:" toAddresses="#[(p('smtpemail.distribution')) splitBy(&quot;,&quot;)]">
+			<reconnect frequency="3000" count="3" />
+			<email:body contentType="text/html" >
+				<email:content ><![CDATA[#[vars.emails]]]></email:content>
+			</email:body>
+			<email:attachments ><![CDATA[#[%dw 2.0
+output application/xlsx header=true
+---
+{"TSORDS Record.xlsx": vars.pulledRecords }]]]></email:attachments>
+		</email:send>
+		<logger level="INFO" doc:name="after success email" doc:id="3097a007-d309-4756-9a56-85f402366233" message="before success email #[sizeOf(payload)]"/>
+	</sub-flow>
+	
+</mule>

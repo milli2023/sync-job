@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:cloudhub="http://www.mulesoft.org/schema/mule/cloudhub"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:sharepoint="http://www.mulesoft.org/schema/mule/sharepoint"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/cloudhub http://www.mulesoft.org/schema/mule/cloudhub/current/mule-cloudhub.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/sharepoint http://www.mulesoft.org/schema/mule/sharepoint/current/mule-sharepoint.xsd">
+	<!--  
+   	<email:smtp-config name="Gmail_Email_SMTP" doc:name="Email SMTP" doc:id="e1bf83b5-75ab-477f-aa62-c555c2ef4b5c" >
+			<email:smtps-connection host="smtp.gmail.com" password="vypxxmdrrcbyitzj" user="johnnyangelnj@gmail.com">
+	        <tls:context enabledProtocols="TLSv1.1, TLSv1.2">
+	            <tls:trust-store insecure="true"/>
+	        </tls:context>
+    	</email:smtps-connection>
+	</email:smtp-config>
+	-->
+	<http:request-config name="HTTP_Vertex_Login_Request_configuration" doc:name="HTTP Request configuration" doc:id="f1aebd45-85e7-4820-91af-de7bc9615a53" >
+		<http:request-connection protocol="HTTPS" host="${vertex.host.login}" port="${vertex.port}" />
+	</http:request-config>
+	<http:request-config name="HTTP_Vertex_Supplies_Request_configuration" doc:name="HTTP Request configuration" doc:id="e43d18ec-f1f4-4ba3-a05e-680714cb09f9" >
+		<http:request-connection protocol="HTTPS" host="${vertex.host.supplies}" port="${vertex.port}" />
+	</http:request-config>
+	
+	<email:smtp-config name="AWS_Email_SMTP" doc:name="Email SMTP" doc:id="46c2a1db-b3d3-4ab0-b5c9-5f9a6cbf1674" >
+		<email:smtp-connection host="email-smtp.us-east-1.amazonaws.com" port="587" user="AKIAIZJMN6SNBBZW563Q" password="ArRIeEf3WZBaVP+JI3AtNGmDMWpJJ9baqemfQq46PQUZ" />
+	</email:smtp-config>
+	
+    <configuration-properties doc:name="Configuration properties" doc:id="99a9d858-d7a3-4eff-8080-50314944444e" file="config/configuration-common.yaml" />
+	<secure-properties:config name="Secure_Properties_Config_common" doc:name="Secure Properties Config" doc:id="e699d9a5-fbab-49b8-b5d3-cb20a8479c94" file="config/configuration-common.yaml" key="${MULE_SECURE_PROPERTIES_KEY}" />
+	<configuration-properties doc:name="Configuration properties" doc:id="386b56cc-ba1c-429a-9fc3-3c41053263d2" file="config/configuration-${MULE_ENV}.yaml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="31f12664-aba8-40eb-b68f-b92de4a6274d" file="config/configuration-${MULE_ENV}.yaml" key="${MULE_SECURE_PROPERTIES_KEY}" />
+	
+   <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="9cb8b949-1fea-4a7a-a8a4-dad0d7470224" >
+		<salesforce:oauth-user-pass-connection consumerKey="${secure::salesforce.consumerkey}"
+		 consumerSecret="${secure::salesforce.consumersecret}"
+		 username="${salesforce.username}" password="${secure::salesforce.password}" tokenEndpoint="${salesforce.token.url}" securityToken="${secure::salesforce.securitytoken}"
+		 />
+	</salesforce:sfdc-config>
+	<http:request-config name="SF_HTTP_Request_Configuration" doc:name="HTTP Request configuration" doc:id="32af750f-5a6f-4940-82fe-71f39f7e0484" >
+		<http:request-connection protocol="HTTPS" host="${salesforce.host}" port="${salesforce.port}" />
+	</http:request-config>
+	<http:request-config name="SF_Instance_HTTP_Request_Configuration" doc:name="HTTP Request configuration" doc:id="d602f6f4-b6f8-4554-b3b5-4d2aad19e26c" responseTimeout="${https.response.timeout}">
+		<http:request-connection host="#[vars.oAuthAccessTokenData.instance_url_host]" protocol="HTTPS" port="443" connectionIdleTimeout="${https.connection.timeout}"/>
+	</http:request-config>
+
+ 	<cloudhub:config name="CloudHub_Config" doc:name="CloudHub Config" doc:id="649b235a-6061-4aea-b8e7-3a496f0074cf" >
+		<cloudhub:connection username="${cloudhub.username}" password="${secure::cloudhub.password}" environment="${environment.id}" />
+	</cloudhub:config>
+	
+	<db:config name="Oracle_Database_Config" doc:name="Database Config"  >
+  		<db:oracle-connection host="${oracle.host}" user="${oracle.user}" password="${secure::oracle.password}" serviceName="${oracle.serviceName}"/>
+	</db:config>
+	
+	<file:config name="File_Config" doc:name="File Config" doc:id="65fba60d-d484-4f36-a241-07c2d79fac6c" >
+		<file:connection workingDir="/tmp" />
+	</file:config>
+	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="2ab1b467-0434-4c86-8ff4-df6c19664cba" >
+		<sftp:connection workingDir="/tmp" host="${rco.sftp.host}" port="${rco.sftp.port}" username="${rco.sftp.username}" password="${rco.sftp.password}">
+		<pooling-profile initialisationPolicy="INITIALISE_NONE" />
+		</sftp:connection>
+	</sftp:config>
+	<file:config name="CFS_File_Config" doc:name="File Config" doc:id="9289d373-f0ca-4c86-9295-55473bdb9266" >
+		<file:connection workingDir="/tmp" />
+	</file:config>
+	<sftp:config name="CFS_SFTP_Config" doc:name="SFTP Config" doc:id="e1773f2a-0981-4270-a78c-2eebcbed7534" >
+		<sftp:connection workingDir="/" host="${cfs.sftp.host}" port="${cfs.sftp.port}" username="${cfs.sftp.username}" password="${cfs.sftp.password}" >
+		<pooling-profile initialisationPolicy="INITIALISE_NONE" />
+		</sftp:connection>
+	</sftp:config>
+	<sftp:config name="CFS_ARCINVC_SFTP_Config" doc:name="SFTP Config" doc:id="c77df225-8f65-4b8d-a82e-b0db7df68961" >
+		<sftp:connection workingDir="/" host="${cfs.arcinvc.sftp.host}" port="${cfs.arcinvc.sftp.port}" username="${cfs.arcinvc.sftp.username}" password="${cfs.arcinvc.sftp.password}" >
+		<pooling-profile initialisationPolicy="INITIALISE_NONE" />
+		</sftp:connection>
+	</sftp:config>
+	<sftp:config name="JDE_SFTP_Config" doc:name="SFTP Config" doc:id="9ba78df5-c1da-4bd5-982b-49e05982278d" >
+		<sftp:connection host="${jde.sftp.host}" workingDir="${jde.sftp.outDirectory}" port="${jde.sftp.port}" username="${jde.sftp.username}" password="${jde.sftp.password}">
+		<pooling-profile initialisationPolicy="INITIALISE_NONE" />
+		</sftp:connection>
+	</sftp:config>
+	<sftp:config name="ECOM-SFTP_Config" doc:name="SFTP Config" doc:id="2ab1b467-0434-4c86-8ff4-df6c19664cba" >
+		<sftp:connection workingDir="/out" host="${ecom.sftp.host}" port="${ecom.sftp.port}" username="${ecom.sftp.username}" password="${ecom.sftp.password}">
+			<reconnection >
+				<reconnect frequency="3000" count="3" />
+			</reconnection>
+			<pooling-profile initialisationPolicy="INITIALISE_NONE" />
+		</sftp:connection>
+	</sftp:config>
+	<sftp:config name="TS_SFTP_Config" doc:name="SFTP Config" doc:id="e1773f2a-0981-4270-a78c-2eebcbed7534" >
+		<sftp:connection workingDir="/out" host="${ts.sftp.host}" port="${ts.sftp.port}" username="${ts.sftp.username}" password="${ts.sftp.password}" />
+	</sftp:config>
+	
+	<sharepoint:sharepoint-online-config name="Sharepoint_Sharepoint_online-agfiles" doc:name="Sharepoint Sharepoint online" doc:id="d27fd3c1-cccc-4716-94a8-5e90c87be07a" >
+		<sharepoint:online-connection onlineUsername="svc_mulesoft@redcross.org" onlinePassword="t.,Jk8*D!=2@6Aki14+o2;+QHFIfRT" siteUrl="${sharepoint.siteurl}" />
+	</sharepoint:sharepoint-online-config>
+	<!-- CFS Oracle to SFDC Account P-Number Flow --> 
+	<os:object-store name="CFS_Oracle_Object_store" doc:name="Object store" doc:id="276185bc-4dbf-4b96-b18c-da3e00a6177b" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="CFS_SFTP_Object_store" doc:name="Object store" doc:id="b791fafe-709b-437b-96e2-54aec047dc02" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+    <os:object-store name="RCO_SFTP_Object_store" doc:name="Object store" doc:id="e9fed196-ceee-4d7e-bcac-667010657554" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="RCO_SalesTax_Object_store" doc:name="Object store" doc:id="19ddeba7-953f-4925-bbaf-4a027935237d" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="SFDC_Instructor_Object_store" doc:name="Object store" doc:id="671e9a5f-88cb-4427-9bc9-4a567bf0ca73" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="CFS_Open_Orders_Object_store" doc:name="Object store" doc:id="4e99a286-8c24-4cfe-b664-7bed1b08efa9" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="CFS_AR_Aging_Object_store" doc:name="Object store" doc:id="50840b77-c950-418a-a55d-cf68f44e2de6" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<!-- SFDC Account To CFS Oracle Flow --> 
+	<os:object-store name="SFDC_Account_CFS_Object_store" doc:name="Object store" doc:id="9ed4de3e-9e80-4b55-b01c-e7294813e0cb" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="CFS_Oracle_SFDC_Account_Object_store" doc:name="Object store" doc:id="f064dee2-4818-43c6-8f22-7b5ea1d96640" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="CFS_Oracle_SFDC_Account_Bulk_Object_store" doc:name="Object store" doc:id="8af074b6-121e-4fd1-8ea4-aa7b0a27aa03" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="Vextex_SalesTax_Object_store" doc:name="Object store" doc:id="6e3127c5-8fa5-4de0-b2f2-e1bed3e9e168" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="JDE_Vextex_SalesTax_Object_store" doc:name="Object store" doc:id="89f3afa5-c66b-43e1-b919-b5446d7650dc" persistent="true" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="13a604cb-49d6-4fea-943b-6ca35b54da65" persistent="false" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<os:object-store name="Vertex_OAuth_Object_store" doc:name="Object store" doc:id="267bc357-d3e3-4604-a64e-4667c41e54b4" persistent="false" maxEntries="${objectstore.maxentries}" entryTtl="${objectstore.entryttl.seconds}" expirationInterval="${objectstore.expiration.minutes}" />
+	<global-property doc:name="Global Property" doc:id="dc4ecf19-d285-4259-9ce9-07d5d1b8c2a3" name="MULE_SECURE_PROPERTIES_KEY" value="mulesoft56913578" />
+	<sftp:config name="Mulesoft-araging-archive-sftp-config" doc:name="SFTP Config" doc:id="b4328b9f-21e0-4a34-9c01-e9afbab16a2d" >
+		<sftp:connection host="${mulesoft.sftp.host}" username="${mulesoft.sftp.username}" password="${mulesoft.sftp.password}" workingDir="${mulesoft.sftp.inDirectory}" port="${mulesoft.sftp.port}"/>
+	</sftp:config>
+
+<!--  
+	<db:config name="MySQL_Database_Config" doc:name="Database Config" doc:id="be81adaa-0a2e-4fde-ac9c-c4dd825a3022" >
+		<db:my-sql-connection host="localhost" port="3306" user="mulesoft" password="JohnnyMulesoft123!" database="arc" />
+	</db:config>
+-->
+	
+</mule>

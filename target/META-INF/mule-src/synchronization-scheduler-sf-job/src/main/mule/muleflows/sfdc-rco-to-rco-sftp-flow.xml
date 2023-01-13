@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+	<flow name="sfdc-rco-to-rco-sftp-flow" doc:id="c072ef1e-453e-438a-97bd-5c3eeb38af40" >
+		<os:retrieve doc:name="Retrieve" doc:id="76c3795d-d9b3-451a-9604-f3582465be7a" key="CreatedDate" objectStore="RCO_SFTP_Object_store">
+			<os:default-value ><![CDATA[${workflow.rco-sftp.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Retrieve  Last Execution Date" doc:id="7b428309-446f-4f0c-b3a6-c03695c018cc" message="Retrieve Last Execution Date #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="419f9755-6159-4cb0-9a44-0fdd24628d39" variableName="createdDate"/>
+		<try doc:name="Try" doc:id="797d127e-588e-40cf-a1ad-3ca034a96857" >
+			<salesforce:query doc:name="Integration File " doc:id="4a77b65e-6c8d-4d66-a05f-a0bd3ec95e53" config-ref="Salesforce_Config">
+			<reconnect />
+			<salesforce:salesforce-query><![CDATA[SELECT Id, File_Name__c, Sequence_Number__c, Record_Data__c, CreatedDate FROM Integration_Files__c where Target_System__c = 'RCO' and  CreatedDate > :createdDate order by File_Name__c, Sequence_Number__c]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"createdDate" : vars.createdDate
+}]]]></salesforce:parameters>
+		</salesforce:query>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0a76a426-a1ae-4885-8190-69908f2c6215" >
+				<email:send doc:name="Send RCO Email Escalation" doc:id="0dd05944-d78f-4af0-ba83-114034c7686f" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - RCO Synchronization Process Error with Integrations file lookup">
+					<email:to-addresses >
+						<email:to-address value="john.cordero@redcross.org" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" />
+				</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Query Results" doc:id="337a3d86-1b62-418c-9351-dbae3ef576a6" message="Query Results #[payload]"/>
+		<ee:transform doc:name="Payload to JSON" doc:id="ab26c382-aea6-42f5-bb4e-59eb59ee5309" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+
+---
+payload groupBy (value, index) -> value.File_Name__c]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Array of File Content" doc:id="f10119a9-2e58-45c2-a0b6-4cc9cc943548" message="Array of File Content #[payload]"/>
+		<choice doc:name="Choice" doc:id="010a7a54-2f37-488b-9b3d-9009ec01257a" >
+			<when expression="#[sizeOf(payload) != 0]">
+				<try doc:name="Try" doc:id="ac83fcc9-470f-461e-b94f-76f11a2849eb">
+					<foreach doc:name="For Each" doc:id="71b50eb5-4ff7-4685-8a73-f47faf125b06" collection="#[payload]">
+						<set-variable value="#[payload]" doc:name="Keep Original Payload" doc:id="7502fa64-2cd1-4184-b5d5-226cdf96e81b" variableName="originalPayload"/>
+						<logger level="INFO" doc:name="Logger" doc:id="4ea71e6b-3268-4c00-b810-19813034111b" message="File to process #[payload] of  size #[sizeOf(payload[0])]"/>
+						<choice doc:name="Choice" doc:id="886ca2bc-6c74-4d6d-8b72-4112793453ed" >
+							<when expression="sizeOf(payload[0]) &gt; 2">
+								<set-variable value="#[payload[0].CreatedDate[0]]" doc:name="Record CreatedDate" doc:id="aaa46fa3-3680-4b85-8016-25980bd508bd" variableName="CreatedDate" />
+								<set-variable value="#[payload[0].File_Name__c[0]]" doc:name="FileName" doc:id="cab6e7a6-e8fb-4cd6-a340-41cd18c2605b" variableName="fileName" />
+								<set-variable value="#[vars.fileName[0 to 9]]" doc:name="File Subdirectory Code" doc:id="bd7299d1-98c7-488a-83a4-2fa5c13c87c5" variableName="fileSubdirectoryCode" />
+								<ee:transform doc:name="Subdirectory Path" doc:id="603d41dd-f8ae-4d5e-ad5b-3b2cdfea4f8f">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+
+output application/java
+
+---
+vars.fileSubdirectoryCode as String match {
+		case "ARC_Master" ->  '${rco.sftp.outDirectory}${rco.subdirectories.ARC_Master}' 
+		case 'ARC_Invent' ->  '${rco.sftp.outDirectory}${rco.subdirectories.ARC_Invent}' 
+		case 'ARC_LMS_Ma' ->  '${rco.sftp.outDirectory}${rco.subdirectories.ARC_LMS_Ma}' 
+		case 'ARC_Locati' ->  '${rco.sftp.outDirectory}${rco.subdirectories.ARC_Locati}' 
+		case 'ARC_Priceb' ->  '${rco.sftp.outDirectory}${rco.subdirectories.ARC_Priceb}' 
+		case 'ARC_Site_C' ->  '${rco.sftp.outDirectory}${rco.subdirectories.ARC_Site_C}' 
+		else -> '${rco.sftp.outDirectory}'
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+								<set-variable value="#[payload]" doc:name="Full Outbound Directory and Filename" doc:id="97fbbc08-c2d0-4bd3-b8e9-d1634c1de64a" variableName="fullOutboundPath" />
+								<logger level="INFO" doc:name="Output Directory" doc:id="969b3dda-71d9-4585-a7fb-20356e541a78" message="Output Directory #[vars.fullOutboundPath]" />
+								<ee:transform doc:name="FileContent" doc:id="8dd1be14-8eb3-4c96-a752-e7f5c2609409">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+
+
+---
+{
+	fileContent: vars.originalPayload[0].Record_Data__c joinBy (",") as  String replace "," with ""
+}
+  ]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+								<set-payload value="#[payload.fileContent]" doc:name="Set Payload" doc:id="a435c9f0-b159-47f3-8dfe-c26a6c7cc658" />
+								<logger level="INFO" doc:name="XML Content to Write " doc:id="a1adb0e6-4d2b-43b2-b2cd-976e90c8470e" message="XML Content for [#[vars.fileName]]to Write #[payload]" />
+								<file:write doc:id="422f4ad0-979d-4e23-b882-dceeec74d0a0" doc:name="SFDC - RCO LMS Catalog Files" config-ref="File_Config" path="#[vars.fileName]">
+						</file:write>
+								<sftp:write doc:id="0f614ede-688a-43d7-93d3-538815a15a65" doc:name="Write RCO files to SFTP server" config-ref="SFTP_Config" path="#[vars.fullOutboundPath ++ vars.fileName]" />
+							</when>
+							<otherwise >
+								<email:send doc:name="Send RCO Email File has No Data" doc:id="dd78378f-7364-409d-9673-83ac5c9c118d" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - RCO Synchronization Process Integrations file has No Data">
+									<email:to-addresses >
+										<email:to-address value="john.cordero@redcross.org" />
+									</email:to-addresses>
+									<email:body contentType="text/plain" />
+								</email:send>
+							</otherwise>
+						</choice>
+						<!--  
+						<choice doc:name="Choice" doc:id="9fbd5d14-b3df-4f20-80cd-b8b6ecbe0e14" >
+							<when expression="#['ARC_Master' == vars.fileSubdirectoryCode]">
+								<set-variable value="${rco.sftp.outDirectory}${rco.subdirectories.ARC_Master}" doc:name="ARC_Master Output Directory" doc:id="d543df15-a05b-491f-96e8-458f65806054" variableName="outDirectory" />
+							</when>
+							<when expression="#['ARC_Invent' == vars.fileSubdirectoryCode]">
+								<set-variable value="${rco.sftp.outDirectory}${rco.subdirectories.ARC_Invent}" doc:name="ARC_Inventory Output Directory" doc:id="7e5c7883-dab7-4b23-ae17-c84f1a766dbc" variableName="outDirectory" />
+							</when>
+							<when expression="#['ARC_LMS_Ma' == vars.fileSubdirectoryCode]">
+								<set-variable value="${rco.sftp.outDirectory}${rco.subdirectories.ARC_LMS_Ma}" doc:name="ARC_LMS_Master Output Directory" doc:id="8dbc8f6e-7e58-4888-a655-2f8d9d503f15" variableName="outDirectory" />
+							</when>
+							<when expression="#['ARC_Locati' == vars.fileSubdirectoryCode]">
+								<set-variable value="${rco.sftp.outDirectory}${rco.subdirectories.ARC_Locati}" doc:name=" ARC_Location Output Directory" doc:id="944c23aa-dda8-451e-afcb-0f84010ac03a" variableName="outDirectory" />
+							</when>	
+							<when expression="#['ARC_Priceb' == vars.fileSubdirectoryCode]">
+								<set-variable value="${rco.sftp.outDirectory}${rco.subdirectories.ARC_Priceb}" doc:name="ARC_Pricebook Output Directory" doc:id="d47a34f5-52f2-48f1-879f-fd2a90bd2e25" variableName="outDirectory" />
+							</when>
+							<when expression="#['ARC_Site_C' == vars.fileSubdirectoryCode]">
+								<set-variable value="${rco.sftp.outDirectory}${rco.subdirectories.ARC_Site_C}" doc:name="ARC_Site_Catalog Output Directory" doc:id="c0e6d70a-b628-409c-8f9d-1b41f5405464" variableName="outDirectory" />
+							</when>
+							<otherwise >
+								<logger level="WARN" doc:name="Logger" doc:id="7b75b394-bd79-45e0-9255-c89a21df138d" message="File Subdirectory Code does not match configuration"/>
+							</otherwise>												
+						</choice>
+						-->
+
+		</foreach>
+					<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="61c10f6a-f7d3-4873-9fa7-75b0ea82789a">
+					<email:send doc:name="Send RCO Email Escalation" doc:id="542a863a-f7cc-458a-8a39-3c29a7bf01f8" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - RCO Synchronization Process Error">
+						<email:to-addresses>
+							<email:to-address value="john.cordero@redcross.org" />
+						</email:to-addresses>
+						<email:body contentType="text/html" >
+								</email:body>
+					</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+			</when>
+			<otherwise >
+				<email:send doc:name="RCO No Integration Records Found" doc:id="285ecf68-d24a-4dd4-ac22-d843f10203f9" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft ${MULE_ENV} - RCO Synchronization Process No Records to Process">
+					<email:to-addresses >
+						<email:to-address value="john.cordero@redcross.org" />
+					</email:to-addresses>
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[<p>
+
+<h3> No records found </h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="8ca338e5-14ee-4631-86c4-9d362ebae984" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+---
+{
+  now: now(),
+  epochTime : now() as Number,
+  nanoseconds: now().nanoseconds,
+  milliseconds: now().milliseconds,
+  seconds: now().seconds,
+  minutes: now().minutes,
+  hour: now().hour,
+  day: now().day,
+  month: now().month,
+  year: now().year,
+  quarter: now().quarter,
+  dayOfWeek: now().dayOfWeek,
+  dayOfYear: now().dayOfYear,
+  offsetSeconds: now().offsetSeconds,
+  formattedDate: now() as String {format: "y-MM-dd"},
+  formattedTime: now() as String {format: "hh:m:s"}
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="CreatedDate" ><![CDATA[%dw 2.0
+output text/plain
+---
+now() as String]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Storing Last Executed Date" doc:id="4cf279dd-686d-405b-a995-e5ad49bfcedd" message="Storing Last Executed Date of #[vars.CreatedDate]" />
+		<os:store doc:name="Store" doc:id="3369c10c-dba3-42f5-8720-0303ffafb979" objectStore="RCO_SFTP_Object_store" key="CreatedDate">
+			<os:value><![CDATA[#[vars.CreatedDate]]]></os:value>
+		</os:store>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3cb8fdcf-950a-4cfc-a2bd-2182639e3fca" >
+				<email:send doc:name="Send RCO Email Escalation" doc:id="532fb1b0-7c0e-428f-b1c6-28297b620b6e" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - RCO Synchronization Process Error">
+					<email:to-addresses >
+						<email:to-address value="john.cordero@redcross.org" />
+					</email:to-addresses>
+					<email:body contentType="text/plain" />
+				</email:send>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

@@ -1,0 +1,18 @@
+{
+  "id" : "",
+  "operation" : "",
+  "object" : "",
+  "createdById" : "",
+  "createdDate" : "",
+  "systemModstamp" : "",
+  "state" : "",
+  "concurrencyMode" : "",
+  "contentType" : "",
+  "apiVersion" : 0,
+  "jobType" : "",
+  "lineEnding" : "",
+  "columnDelimiter" : "",
+  "numberRecordsProcessed" : 0,
+  "retries" : 0,
+  "totalProcessingTime" : 0
+}

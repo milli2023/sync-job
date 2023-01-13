@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<flow name="sfdc-account-to-oracle-flow" doc:id="c99df453-0a7c-481f-90fb-560324f8b030">
+		<os:retrieve doc:name="Retrieve" doc:id="2a0a568b-64f5-410a-a0bf-9e0d07bf3e27" key="LastExecutedDate" objectStore="SFDC_Account_CFS_Object_store">
+			<os:default-value><![CDATA[${workflow.account.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Logger" doc:id="4c0123c8-62ef-4355-851e-ecd4828c9071" message="Last Execution Date #[payload]" />
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="21ba7571-f84b-471c-8f45-2eba82beeeed" variableName="lastExecutedDate" />
+		<set-variable value="${sfdc.sb.account.record.type.guid}" doc:name="SB Organization Account" doc:id="e2700c70-a5e6-4bd2-8cbf-2e31d4514a1c" variableName="sbOrgAccount" />
+		<try doc:name="Try" doc:id="c2653796-1757-4dcb-8876-0b5f1c18b34c">
+			<salesforce:query doc:name="Account Object" doc:id="a4edd13d-ecc4-4597-8970-6a626ed9279d" config-ref="Salesforce_Config">
+			<reconnect />
+				<salesforce:salesforce-query><![CDATA[Select Id,
+					CFS_Account_Number_1__c,
+					Name,
+					nk_billto_org_id__c,
+					SABA_LMS_Code__c,
+					Special_Invoicing__c,
+					BillingStreet,
+					BillingCity,
+					BillingState,
+					BillingPostalCode,
+					BillingCountry,
+					Billing_Contact__c,
+					Billing_Contact__r.Name,
+					Billing_Contact__r.FirstName,
+					Billing_Contact__r.LastName,
+					Billing_Contact_phone__c,
+					Billing_Contact_email__c,
+					Payment_Terms__c,
+					Invoice_delivery_Email__c,
+					Invoice_Delivery_Type__c,
+					Invoice_Delivery_Frequency__c,
+					CreatedDate,
+					CreatedById,
+					LastModifiedDate,
+					LastModifiedById
+					from Account Where CFS_Account_Number_1__c <> null and (NOT CFS_Account_Number_1__c LIKE 'PR%') and CFS_Modified_Date__c > :LastExecutedDate Order by CFS_Modified_Date__c]]>
+		</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"LastExecutedDate" : vars.lastExecutedDate,
+
+	"SBOrgAccount" : vars.sbOrgAccount
+}]]]></salesforce:parameters>
+		</salesforce:query>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="400813bc-ba3c-4f7d-ae03-0be0954c3607">
+					<logger level="INFO" doc:name="Logger" doc:id="e932c835-ecea-49e1-8fb6-066fe9ba8416" message="Error #[payload]" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+
+		<logger level="INFO" doc:name="Logger" doc:id="81ebd0b1-5799-43dc-86c3-8a3f7b5d0db1" message="SFDC Account Requests #[payload]" />
+		<set-variable value="#[sizeOf(payload)]" doc:name="NumberOfAccountObjectsToProcess" doc:id="36bfd358-beef-492b-8498-7d47abe98de8" variableName="NumberOfAccountObjectsToProcess"/>
+		<ee:transform doc:name="Transform Message" doc:id="6679c3cb-35d4-473d-8284-da0043feb575">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+fun validateAddress(address) = if(address != null) if (sizeOf(address) > 40) address[0 to 39] else address default "Address Not Parsed Correctly" else ""
+fun validateCustomerName(name) = if(name != null) if (sizeOf(name) > 50) name[0 to 49] else name default "Name Not Parsed Correctly" else ""
+fun validateCity(city) = if(city != null) if (sizeOf(city) > 30) city[0 to 29] else city default "City Not Parsed Correctly" else ""
+fun validateZip(zip) = if(zip != null) if (sizeOf(zip) > 10) zip[0 to 9] else zip default "Zip Not Parsed Correctly" else "" 
+fun validateTwoChar(string) = if(string != null) if (sizeOf(string) > 2) string[0 to 1] else string default "String Not Parsed Correctly" else "" 
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	"CUSTOMER_NUMBER": payload01.CFS_Account_Number_1__c default "",
+	"CUSTOMER_NAME": validateCustomerName(payload01.Name),
+	"ORIG_SYSTEM_CUSTOMER_REF": payload01.nk_billto_org_id__c default "Not Available",
+	"BILL_TO_ORGID": payload01.SABA_LMS_Code__c default "",
+	"USER_FIELD3": payload01.Special_Invoicing__c default "",
+	"CUSTOMER_CLASS": "",
+	"PAYMENT_TERMS": payload01.Payment_Terms__c default "",
+	"OUTREACH_FIRST_NAME": payload01.Billing_Contact__r.FirstName  default "",
+	"OUTREACH_LAST_NAME": payload01.Billing_Contact__r.LastName default "",
+	"OUTREACH_EMAIL": payload01.Billing_Contact_email__c default "",
+	"SITE_NAME": payload01.Site default "",
+	"SITE_USE_CODE": "",
+	"PRIMARY_SITE_USE_FLAG": "",
+	"ADDRESS1": if(payload01.BillingStreet != null) validateAddress((payload01.BillingStreet splitBy("\n"))[0]) else "",
+	"ADDRESS2": if(payload01.BillingStreet != null) if((payload01.BillingStreet splitBy("\n"))[1] != null) validateAddress((payload01.BillingStreet splitBy("\n"))[1]) else "" else "",        
+	"CITY": validateCity(payload01.BillingCity),
+	"STATE": validateTwoChar(payload01.BillingState),
+	"ZIP": validateZip(payload01.BillingPostalCode),
+	"COUNTRY": validateTwoChar(payload01.BillingCountry),
+	"LOCATION": "",
+	"BILL_TO_ORG_BILL_CONTACT": payload01.Billing_Contact__c default "",
+	"BILL_TO_ORG_PRIMARYPHONE": payload01.Billing_Contact_phone__c default "",
+	"BILL_TO_CONTACT_NAME": payload01.Billing_Contact__r.Name default "",
+	"BILL_TO_CONTACT_EMAIL": payload01.Billing_Contact_email__c default "",
+	"PHSS_CONTACT_PHONE":  payload01.Billing_Contact_phone__c default "",
+	"PHSS_CONTACT_NAME": payload01.Billing_Contact__r.Name  default "",
+	"INVOICE_DELIVERY_EMAIL": payload01.Invoice_delivery_Email__c default "",
+	"INVOICE_DELIVERY_METHOD": payload01.Invoice_Delivery_Type__c default "",
+	"INVOICE_DELIVERY_FREQUENCY": payload01.Invoice_Delivery_Frequency__c default "",
+	"FLEXFIELD1": "",
+	"FLEXFIELD2": "",
+	"FLEXFIELD3": "",
+	"FLEXFIELD4": "",
+	"FLEXFIELD5": "",
+	"FLEXFIELD6": "",
+	"FLEXFIELD7": "",
+	"FLEXFIELD8": "",
+	"FLEXFIELD9": "",
+	"FLEXFIELD10": "",
+	"FLEXFIELD11": "",
+	"FLEXFIELD12": "",
+	"FLEXFIELD13": "",
+	"FLEXFIELD14": "",
+	"FLEXFIELD15": "",
+	"FLEXFIELD16": "",
+	"FLEXFIELD17": "",
+	"FLEXFIELD18": "",
+	"FLEXFIELD19": "",
+	"FLEXFIELD20": "",
+	"RECORD_ID": 0,
+	"REQUEST_ID": 0,
+	"CONCURRENT_PROGRAM_ID": 0,
+	"STATUS_FLAG": "",
+	"COUNT_OF_SUCCESS_UPDATES": 0,
+	"COUNT_OF_FAIL_UPDATES": 0,
+	"CREATION_DATE": now() as String{
+		format: 'yyyy-MM-dd hh:m:ss'
+	},
+	"CREATED_BY": payload01.CreatedById,
+	"LAST_UPDATE_DATE": now() as String{
+		format: 'yyyy-MM-dd hh:m:ss'
+	},
+	"LAST_UPDATE_BY": payload01.LastModifiedById,
+	"lastUpdateDate": payload01.LastModifiedDate
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="caf35b2d-a214-40ff-8db3-9201966461ba" message="#[payload]" />
+		<choice doc:name="Choice" doc:id="ed3ab9d6-7da6-447d-8364-753fd8f13ee0">
+			<when expression="sizeOf(payload) != 0">
+				<try doc:name="Try" doc:id="c5d8c667-05f7-4390-8899-e30dc60dd17d">
+					<foreach doc:name="For Each" doc:id="6679cc30-2637-43ea-aefd-df83b09ac17c">
+						<logger level="INFO" doc:name="Logger" doc:id="14755e3d-423d-4bf4-b390-fb66694c09b0" message="#[payload]" />
+						<set-variable value="#[payload.lastUpdateDate]" doc:name="LastExecutedDate" doc:id="4b3988f3-8447-4351-95df-ccc614a36299" variableName="LastExecutedDate" />
+						
+						 
+						<db:insert doc:name="APPS.ARC_CUSTOMER_UPDATES_EXTERNAL" doc:id="0379e66e-60c9-4f04-91db-431129639cb8" config-ref="Oracle_Database_Config">
+							<db:sql><![CDATA[INSERT INTO APPS.ARC_CUSTOMER_UPDATES_EXTERNAL (CUSTOMER_NUMBER, CUSTOMER_NAME, 
+ORIG_SYSTEM_CUSTOMER_REF, BILL_TO_ORGID, USER_FIELD3, CUSTOMER_CLASS, PAYMENT_TERMS, OUTREACH_FIRST_NAME, OUTREACH_LAST_NAME, OUTREACH_EMAIL, 
+SITE_NAME, SITE_USE_CODE, PRIMARY_SITE_USE_FLAG, ADDRESS1, ADDRESS2, CITY, STATE, ZIP, COUNTRY, LOCATION, BILL_TO_CONTACT_NAME, 
+PHSS_CONTACT_PHONE, PHSS_CONTACT_NAME, INVOICE_DELIVERY_EMAIL, INVOICE_DELIVERY_METHOD, INVOICE_DELIVERY_FREQUENCY, FLEXFIELD1, FLEXFIELD2, 
+FLEXFIELD3, FLEXFIELD4, FLEXFIELD5, FLEXFIELD6, FLEXFIELD7, FLEXFIELD8, FLEXFIELD9, FLEXFIELD10, FLEXFIELD11, FLEXFIELD12, FLEXFIELD13, 
+FLEXFIELD14, FLEXFIELD15, FLEXFIELD16, FLEXFIELD17, FLEXFIELD18, FLEXFIELD19, FLEXFIELD20, RECORD_ID, REQUEST_ID, CONCURRENT_PROGRAM_ID, 
+STATUS_FLAG, COUNT_OF_SUCCESS_UPDATES, COUNT_OF_FAIL_UPDATES, CREATION_DATE, CREATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_BY ) 
+VALUES 
+(:CUSTOMER_NUMBER, :CUSTOMER_NAME, :ORIG_SYSTEM_CUSTOMER_REF, :BILL_TO_ORGID, :USER_FIELD3, :CUSTOMER_CLASS, :PAYMENT_TERMS, 
+:OUTREACH_FIRST_NAME, :OUTREACH_LAST_NAME, :OUTREACH_EMAIL, :SITE_NAME, :SITE_USE_CODE, :PRIMARY_SITE_USE_FLAG, :ADDRESS1, :ADDRESS2, 
+:CITY, :STATE, :ZIP, :COUNTRY, :LOCATION, :BILL_TO_CONTACT_NAME, :PHSS_CONTACT_PHONE, :PHSS_CONTACT_NAME, :INVOICE_DELIVERY_EMAIL, 
+:INVOICE_DELIVERY_METHOD, :INVOICE_DELIVERY_FREQUENCY, :FLEXFIELD1, :FLEXFIELD2, :FLEXFIELD3, :FLEXFIELD4, :FLEXFIELD5, :FLEXFIELD6, 
+:FLEXFIELD7, :FLEXFIELD8, :FLEXFIELD9, :FLEXFIELD10, :FLEXFIELD11, :FLEXFIELD12, :FLEXFIELD13, :FLEXFIELD14, :FLEXFIELD15, :FLEXFIELD16, 
+:FLEXFIELD17, :FLEXFIELD18, :FLEXFIELD19, :FLEXFIELD20, :RECORD_ID, :REQUEST_ID, :CONCURRENT_PROGRAM_ID, :STATUS_FLAG, 
+:COUNT_OF_SUCCESS_UPDATES, :COUNT_OF_FAIL_UPDATES, :CREATION_DATE, :CREATED_BY, :LAST_UPDATE_DATE, :LAST_UPDATE_BY )]]></db:sql>
+							<db:input-parameters><![CDATA[#[{ "CUSTOMER_NUMBER":payload.CUSTOMER_NUMBER,  
+							"CUSTOMER_NAME":payload.CUSTOMER_NAME,  "ORIG_SYSTEM_CUSTOMER_REF":payload.ORIG_SYSTEM_CUSTOMER_REF,  
+							"BILL_TO_ORGID": payload.BILL_TO_ORGID,  "USER_FIELD3":payload.USER_FIELD3,  
+							"CUSTOMER_CLASS":payload.CUSTOMER_CLASS,  "PAYMENT_TERMS":payload.PAYMENT_TERMS,  
+							"OUTREACH_FIRST_NAME":payload.OUTREACH_FIRST_NAME,  "OUTREACH_LAST_NAME":payload.OUTREACH_LAST_NAME,  
+							"OUTREACH_EMAIL":payload.OUTREACH_EMAIL,  "SITE_NAME":payload.SITE_NAME,  
+							"SITE_USE_CODE":payload.SITE_USE_CODE,  "PRIMARY_SITE_USE_FLAG":payload.PRIMARY_SITE_USE_FLAG,  
+							"ADDRESS1":payload.ADDRESS1,  "ADDRESS2":payload.ADDRESS2,  
+							"CITY":payload.CITY,  
+							"STATE":payload.STATE,  
+							"ZIP":payload.ZIP,  
+							"COUNTRY":payload.COUNTRY,  
+							"LOCATION":payload.LOCATION,  
+							"BILL_TO_ORG_BILL_CONTACT":payload.BILL_TO_ORG_BILL_CONTACT,  
+							"BILL_TO_ORG_PRIMARYPHONE":payload.BILL_TO_ORG_PRIMARYPHONE,  
+							"BILL_TO_CONTACT_NAME":payload.BILL_TO_CONTACT_NAME,  
+							"BILL_TO_CONTACT_EMAIL":payload.BILL_TO_CONTACT_EMAIL,  
+							"PHSS_CONTACT_PHONE":payload.PHSS_CONTACT_PHONE,  
+							"PHSS_CONTACT_NAME":payload.PHSS_CONTACT_NAME,  
+							"INVOICE_DELIVERY_EMAIL":payload.INVOICE_DELIVERY_EMAIL,  
+							"INVOICE_DELIVERY_METHOD":payload.INVOICE_DELIVERY_METHOD,  
+							"INVOICE_DELIVERY_FREQUENCY":payload.INVOICE_DELIVERY_FREQUENCY,  
+							"FLEXFIELD1":payload.FLEXFIELD1,  
+							"FLEXFIELD2":payload.FLEXFIELD2,
+							"FLEXFIELD3":payload.FLEXFIELD3,  
+							"FLEXFIELD4":payload.FLEXFIELD4,  
+							"FLEXFIELD5":payload.FLEXFIELD5,  
+							"FLEXFIELD6":payload.FLEXFIELD6,  
+							"FLEXFIELD7":payload.FLEXFIELD7,  
+							"FLEXFIELD8":payload.FLEXFIELD8,  
+							"FLEXFIELD9":payload.FLEXFIELD9,  
+							"FLEXFIELD10":payload.FLEXFIELD10,  
+							"FLEXFIELD11":payload.FLEXFIELD11,  
+							"FLEXFIELD12":payload.FLEXFIELD12,  
+							"FLEXFIELD13":payload.FLEXFIELD13,  
+							"FLEXFIELD14":payload.FLEXFIELD14,  
+							"FLEXFIELD15":payload.FLEXFIELD15,  
+							"FLEXFIELD16":payload.FLEXFIELD16,  
+							"FLEXFIELD17":payload.FLEXFIELD17,  
+							"FLEXFIELD18":payload.FLEXFIELD18,  
+							"FLEXFIELD19":payload.FLEXFIELD19,  
+							"FLEXFIELD20":payload.FLEXFIELD20,  
+							"RECORD_ID":payload.RECORD_ID,  
+							"REQUEST_ID":payload.REQUEST_ID,  
+							"CONCURRENT_PROGRAM_ID":payload.CONCURRENT_PROGRAM_ID,  
+							"STATUS_FLAG":payload.STATUS_FLAG,  
+							"COUNT_OF_SUCCESS_UPDATES":payload.COUNT_OF_SUCCESS_UPDATES,  
+							"COUNT_OF_FAIL_UPDATES":payload.COUNT_OF_FAIL_UPDATES,  
+							"CREATION_DATE":payload.CREATION_DATE,  
+							"CREATED_BY":payload.CREATED_BY,  
+							"LAST_UPDATE_DATE":payload.LAST_UPDATE_DATE,  
+							"LAST_UPDATE_BY":payload.LAST_UPDATE_BY }]]]></db:input-parameters>
+						</db:insert>
+						<logger level="INFO" doc:name="Logger" doc:id="f060f9a1-3608-414f-99d7-fb595de4c5f4" message="Insert Completed #[payload]"/>
+						
+						
+						
+						
+						<!--  
+						<db:bulk-update doc:name="Upsert Account" doc:id="b14b9842-6db8-4b9e-a69e-b729f4f530e4" config-ref="Oracle_Database_Config">
+							<db:bulk-input-parameters><![CDATA[#[[{ "CUSTOMER_NUMBER" : "",  "CUSTOMER_NAME" : "",  "ORIG_SYSTEM_CUSTOMER_REF" : "",  "LAST_UPDATE_DATE" : "",  "LAST_UPDATE_BY_EXT" : "",  "BILL_TO_ORGID" : "",  "BILL_TO_ORG_BILL_CONTACT" : "",  "SITE_USE_CODE" : "",  "PRIMARY_SITE_USE_FLAG" : "",  "ADDRESS1" : "",  "ADDRESS2" : "",  "CITY" : "",  "STATE" : "",  "ZIP" : "",  "COUNTRY" : "",  "LOCATION" : "",  "PAYMENT_TERMS" : "",  "BILL_TO_ORG_PRIMARYPHONE" : "",  "SITE_NAME" : "",  "BILL_TO_CONTACT_NAME" : "",  "BILL_TO_CONTACT_EMAIL" : "",  "INVOICE_DELIVERY_EMAIL" : "",  "INVOICE_DELIVERY_METHOD" : "",  "INVOICE_DELIVERY_FREQUENCY" : "",  "FLEXFIELD1" : "",  "FLEXFIELD2" : "",  "FLEXFIELD3" : "",  "FLEXFIELD4" : "",  "FLEXFIELD5" : "",  "FLEXFIELD6" : "",  "FLEXFIELD7" : "",  "FLEXFIELD8" : "",  "FLEXFIELD9" : "",  "FLEXFIELD10" : "" }]]]]></db:bulk-input-parameters>
+							<db:sql><![CDATA[MERGE INTO APPS.ARC_CUSTOMER_UPDATES_EXTERNAL USING origin ON (BILL_TO_ORGID = :BILL_TO_ORGID)
+							WHEN MATCHED
+							THEN UPDATE SET BILL_TO_ORGID = :BILL_TO_ORGID,
+							CUSTOMER_NUMBER = :CUSTOMER_NUMBER,
+							CUSTOMER_NAME = :CUSTOMER_NAME,
+							ORIG_SYSTEM_CUSTOMER_REF = :ORIG_SYSTEM_CUSTOMER_REF,
+							LAST_UPDATE_DATE = :LAST_UPDATE_DATE,
+							LAST_UPDATE_BY_EXT = :LAST_UPDATE_BY_EXT, 
+							BILL_TO_ORG_BILL_CONTACT = :BILL_TO_ORG_BILL_CONTACT,
+							SITE_USE_CODE = :SITE_USE_CODE,  
+							PRIMARY_SITE_USE_FLAG = :PRIMARY_SITE_USE_FLAG, 
+							ADDRESS1 = :ADDRESS1, 
+							ADDRESS2 = :ADDRESS2, 
+							CITY = :CITY, 
+						 	STATE = :STATE, 
+							ZIP = :ZIP, 
+							COUNTRY = :COUNTRY, 
+							LOCATION = :LOCATION, 
+							PAYMENT_TERMS = :PAYMENT_TERMS,
+							BILL_TO_ORG_PRIMARYPHONE = :BILL_TO_ORG_PRIMARYPHONE, 
+							SITE_NAME = :SITE_NAME, 
+							BILL_TO_CONTACT_NAME = :BILL_TO_CONTACT_NAME, 
+							BILL_TO_CONTACT_EMAIL = :BILL_TO_CONTACT_EMAIL, 
+							INVOICE_DELIVERY_EMAIL = :INVOICE_DELIVERY_EMAIL, 
+							INVOICE_DELIVERY_METHOD = :INVOICE_DELIVERY_METHOD, 
+							INVOICE_DELIVERY_FREQUENCY = :INVOICE_DELIVERY_FREQUENCY, 
+							FLEXFIELD1 = :FLEXFIELD1, 
+							FLEXFIELD2 = :FLEXFIELD2, 
+							FLEXFIELD3 = :FLEXFIELD3, 
+							FLEXFIELD4 = :FLEXFIELD4, 
+							FLEXFIELD5 = :FLEXFIELD5, 
+							FLEXFIELD6 = :FLEXFIELD6, 
+							FLEXFIELD7 = :FLEXFIELD7, 
+							FLEXFIELD8 = :FLEXFIELD8, 
+							FLEXFIELD9 = :FLEXFIELD9, 
+							FLEXFIELD10 = :FLEXFIELD10 
+							WHEN NOT MATCHED THEN INSERT (CUSTOMER_NUMBER, CUSTOMER_NAME, ORIG_SYSTEM_CUSTOMER_REF, LAST_UPDATE_DATE, LAST_UPDATE_BY_EXT, BILL_TO_ORGID, BILL_TO_ORG_BILL_CONTACT, SITE_USE_CODE , PRIMARY_SITE_USE_FLAG, ADDRESS1, ADDRESS2, CITY, STATE, ZIP, COUNTRY, LOCATION, PAYMENT_TERMS, BILL_TO_ORG_PRIMARYPHONE, SITE_NAME, BILL_TO_CONTACT_NAME, BILL_TO_CONTACT_EMAIL, INVOICE_DELIVERY_EMAIL, INVOICE_DELIVERY_METHOD, INVOICE_DELIVERY_FREQUENCY, FLEXFIELD1, FLEXFIELD2, FLEXFIELD3, FLEXFIELD4, FLEXFIELD5, FLEXFIELD6, FLEXFIELD7, FLEXFIELD8, FLEXFIELD9, FLEXFIELD10 ) VALUES (:CUSTOMER_NUMBER, :CUSTOMER_NAME, :ORIG_SYSTEM_CUSTOMER_REF, :LAST_UPDATE_DATE, :LAST_UPDATE_BY_EXT, :BILL_TO_ORGID, :BILL_TO_ORG_BILL_CONTACT, :SITE_USE_CODE , :PRIMARY_SITE_USE_FLAG, :ADDRESS1, 
+				:ADDRESS2, :CITY, :STATE, :ZIP, :COUNTRY, :LOCATION, :PAYMENT_TERMS, :BILL_TO_ORG_PRIMARYPHONE, :SITE_NAME, :BILL_TO_CONTACT_NAME, :BILL_TO_CONTACT_EMAIL, :INVOICE_DELIVERY_EMAIL, :INVOICE_DELIVERY_METHOD, 
+				:INVOICE_DELIVERY_FREQUENCY, :FLEXFIELD1, :FLEXFIELD2, :FLEXFIELD3, :FLEXFIELD4, :FLEXFIELD5, :FLEXFIELD6, :FLEXFIELD7, :FLEXFIELD8, :FLEXFIELD9, :FLEXFIELD10 )]]></db:sql>
+						</db:bulk-update>
+						-->
+						
+						
+						
+					</foreach>
+					<error-handler>
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="634d5abf-15da-4aea-8a76-b4b37389f614">
+							<email:send doc:name="MS - Salesforce Account Oracle Update Process Error - Salesforce Account to CFS Oracle Insert Process Error" doc:id="fc9ec8d4-e3a3-4ea9-9864-42ae1f651073" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MS - Salesforce Account Oracle Update Process Error - Salesforce Account to CFS Oracle Insert Process Error">
+						<email:to-addresses>
+							<email:to-address value="john.cordero@redcross.org" />
+						</email:to-addresses>
+						<email:body contentType="text/html">
+								</email:body>
+					</email:send>
+						</on-error-continue>
+					</error-handler>
+				</try>
+				<logger level="INFO" doc:name="Logger" doc:id="350cc7c4-6fed-4a13-88ce-5e4c17735993" message="Number of SFDC Accounts that were sent to CFS  #[vars.NumberOfAccountObjectsToProcess]"/>
+			</when>
+			<otherwise>
+				<email:send doc:name="MS - Salesforce Account Oracle Update Process Warning - Salesforce Account to CFS Oracle No Records to Process" doc:id="c88813f5-23c8-4690-8c31-3ed5fc00d310" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MS - Salesforce Account Oracle Update Process Warning - Salesforce Account to CFS Oracle No Records to Process">
+					<email:to-addresses>
+						<email:to-address value="john.cordero@redcross.org" />
+					</email:to-addresses>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[<p>
+
+<h3> No records found </h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="c2c1c649-3902-445e-944f-5e7753fd3592" message="Storing Last Executed Date of #[vars.LastExecutedDate]" />
+		<os:store doc:name="Store" doc:id="8dd37937-47f4-4034-8d51-a69fa5466889" objectStore="SFDC_Account_CFS_Object_store" key="LastExecutedDate">
+			<os:value><![CDATA[#[vars.LastExecutedDate]]]></os:value>
+		</os:store>
+	</flow>
+</mule>
+

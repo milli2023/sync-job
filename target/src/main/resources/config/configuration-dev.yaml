@@ -1,0 +1,118 @@
+environment: 
+  id: "b4cb94ec-d937-4d2c-8199-7b80472e23db"
+
+cloudhub:
+  username: arc_anypoint
+  password: "![lcZfTE/RzZO2y6mv7Q2xWIxZVs+Xz5uOj6jRbC3I4LY=]"
+  
+keystore:
+  path: "keys/keystore-dev.pkcs12"
+  keypassword: "![tjxchA7SwKY9KUaipsZKng==]"
+  password: "![tjxchA7SwKY9KUaipsZKng==]"
+
+
+salesforce:
+  host: "test.salesforce.com"
+  port: "443"
+  token.endpoint: "/services/oauth2/token"
+  token.url: "https://test.salesforce.com/services/oauth2/token"
+  consumerkey: "![ngHUEo/iNQjDGXcAqu1UJ6voTHzDzlK1/AiGWLL6HDcs/gGmQtQ2h4oohktFodTtdh+KgcH9GuhdXV26yD/uJPLkR6M8vCRR03JbSiGuihOupzj6PibdR6IhxjOlkmTT]"
+  consumersecret: "![fO3TcYJ7SYicWp0EXxumOKsH6bohGCRzDSSjEdqdsZBPvx3ZgoJhy7aeKMGR1lauTCfB1mSWs0aN+2v8wGqPJZZFlp2e9qNmkCDSLCBa6gs=]"
+  username: "mulesoftapi@redcross.org.stptest"
+  password: "![TJjZzFpQQS6ghV4eteKRVA==]"
+  securitytoken: "![dAmJxKETIlSwlcr2tLrrRW5GC3gKsqlE/OXSD82Hxvw=]"
+    
+oracle:
+  host: "10.49.40.146"
+  hostDSN: "orcas1cfststdb1.redcross.net"
+  user: "ARC_PHSS_MULESOFT"
+  password: "![KuZ+i9AMTTg07BAX4jFcSA==]"
+  serviceName: "R12TST01"
+  port: "1521"
+
+rco.sftp:
+  env: "DEV"
+  host: "ecomdev.arcphss.org"
+  port: "22"
+  username: "edw"
+  password: "eComdata2"
+  outDirectory: "/outgoing/uat/"
+
+rco.subdirectories:
+  ARC_Master: "ARCMaster/"
+  ARC_Invent: "ARCInventory/"
+  ARC_LMS_Ma: "ARCMaster/"
+  ARC_Locati: "ARCStore/"
+  ARC_Priceb: "ARCPriceBook/"
+  ARC_Site_C: "ARCSite/"
+  
+cfs.sftp:
+  env: "Test"
+  host: "sftppfscfstst.redcross.org"
+  port: "22"
+  username: "phssecom_cfs_sftp_usr_tst"
+  password: "Jq3XbsKD"
+  outDirectory: "in/"
+  
+cfs.arcinvc.sftp:
+  env: "Test"
+  host: "sftpphsscfstst.redcross.org"
+  port: "22"
+  username: "phss_ms_sftp_usr_tst"
+  password: "!V&t2aEn"
+  outDirectory: "in/"
+  
+jde.sftp:
+  env: "Test"
+  host: "ecomdev.arcphss.org"
+  port: "22"
+  username: "jde"
+  password: "jdeTax2022!"
+  outDirectory: "in/"
+  
+vertex:
+  host.login: "auth.vertexsmb.com"
+  host.supplies: "calcconnect.vertexsmb.com"
+  port: ""
+  oauth.enpoint: "/identity/connect/token"
+  supplies.endpoint: "/vertex-ws/v2/supplies"
+  client_id: "![pQ3a/Bacq4a9dNe6+pdzCA==]"
+  client_secret: "![oc/gTGR4vcOtp9R9MC41t6EBEBIzV9wrbch6GYer6EgErnI+ivS0Y7MRxTlcRJIK]"
+  grant_type: "client_credentials"
+  scope: "calc-rest-api"
+  
+sfdc:
+  sb.account.record.type.guid: "0120V000001xno9QAA"
+
+sharepoint:
+  username: "milli.ketera@redcross.org"
+  password: "![F/6rrA9DgvCYQGyxQbpvFw==]"
+  siteurl: "https://americanredcross.sharepoint.com"
+  
+ecom.sftp:
+  env: "test"
+  host: "sftpphsscfsprd.redcross.org"
+  port: "22"
+  username : "phssecom_cfs_sftp_usr_prd"
+  password: "ZC1M7yYf"
+  outDirectory: "out/"
+  
+ts.sftp:
+  env: "test"
+  host: "sftpphsscfsprd.redcross.org"
+  port: "22"
+  username: "phss_sf_cfs_sftp_usr_prd"
+  password: "nyNUfr5Y"
+  passwordec: "ZC1M7yYf"
+  outDirectory: "out/"  
+  
+# araging Mulesoft SFTP
+mulesoft.sftp: 
+  env: "Prod"
+  host: "ecomdev.arcphss.org"
+  port: "22"
+  username: "mulesoft_api"
+  password: "Mulesoft123!"
+  inDirectory: "/ar_aging_archive/in/"
+  outDirectory: "ar_aging_archive/out/"  
+  

@@ -1,0 +1,1312 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="TaxObjectExportResponse" format="json">
+      <types:shape format="weave" example="examples/TaxOrderExportGetResponse-6.json"><![CDATA[%dw 2.0
+
+type TaxObjectExportResponse = Array<{|  Amount__c: String,   AP_Code__c: String,   Batch_Id__c: String,   Batch_Message__c: String,   Batch_Status__c: String,   Billing_City__c: String,   Billing_Contact_Name__c: String,   Billing_Postalcode__c: String,   Billing_State__c: String,   Billing_Street_2__c: String,   Billing_Street__c: String,   CreatedById: String,   CreatedDate: String,   GL_Code__c: String,   Id: String,   IsDeleted: String,   isTaxOnlyAdjustmentIndicator__c: String,   LastModifiedById: String,   LastModifiedDate: String,   LastReferencedDate: String,   LastViewedDate: String,   Line_Item_Id__c: String,   Name: String,   Order_Number__c: String,   Org_Id__c: String,   Org_Name__c: String,   OwnerId: String,   Phone__c: String,   Product_Name__c: String,   Product_SKU__c: String,   Quantity__c: String,   SystemModstamp: String,   Tax_Amount__c: String,   Tax_Class__c: String,   Tax_Status__c: String,   Transaction_Date__c: String,   Vertex_Batch_Export_Date__c: String,   vertex_batch_id__c: String|}> {"example": "[{\\\"Amount__c\\\":\\\"\\\",\\\"AP_Code__c\\\":\\\"\\\",\\\"Batch_Id__c\\\":\\\"\\\",\\\"Batch_Message__c\\\":\\\"\\\",\\\"Batch_Status__c\\\":\\\"\\\",\\\"Billing_City__c\\\":\\\"\\\",\\\"Billing_Contact_Name__c\\\":\\\"\\\",\\\"Billing_Postalcode__c\\\":\\\"\\\",\\\"Billing_State__c\\\":\\\"\\\",\\\"Billing_Street_2__c\\\":\\\"\\\",\\\"Billing_Street__c\\\":\\\"\\\",\\\"CreatedById\\\":\\\"\\\",\\\"CreatedDate\\\":\\\"\\\",\\\"GL_Code__c\\\":\\\"\\\",\\\"Id\\\":\\\"\\\",\\\"IsDeleted\\\":\\\"\\\",\\\"isTaxOnlyAdjustmentIndicator__c\\\":\\\"\\\",\\\"LastModifiedById\\\":\\\"\\\",\\\"LastModifiedDate\\\":\\\"\\\",\\\"LastReferencedDate\\\":\\\"\\\",\\\"LastViewedDate\\\":\\\"\\\",\\\"Line_Item_Id__c\\\":\\\"\\\",\\\"Name\\\":\\\"\\\",\\\"Order_Number__c\\\":\\\"\\\",\\\"Org_Id__c\\\":\\\"\\\",\\\"Org_Name__c\\\":\\\"\\\",\\\"OwnerId\\\":\\\"\\\",\\\"Phone__c\\\":\\\"\\\",\\\"Product_Name__c\\\":\\\"\\\",\\\"Product_SKU__c\\\":\\\"\\\",\\\"Quantity__c\\\":\\\"\\\",\\\"SystemModstamp\\\":\\\"\\\",\\\"Tax_Amount__c\\\":\\\"\\\",\\\"Tax_Class__c\\\":\\\"\\\",\\\"Tax_Status__c\\\":\\\"\\\",\\\"Transaction_Date__c\\\":\\\"\\\",\\\"Vertex_Batch_Export_Date__c\\\":\\\"\\\",\\\"vertex_batch_id__c\\\":\\\"\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="VertexSupplyRequest" format="json">
+      <types:shape format="weave" example="examples/VertexSuppliesRequest-3.json"><![CDATA[%dw 2.0
+
+type VertexSupplyRequest = {|
+  customer: {|
+    customerCode: {|
+      classCode: String, 
+      isBusinessIndicator: Boolean, 
+      value: String
+    |}, 
+    destination: {|
+      city: String, 
+      country: String, 
+      mainDivision: String, 
+      postalCode: String, 
+      streetAddress1: String
+    |}, 
+    isTaxExempt: Boolean
+  |}, 
+  deliveryTerm: String, 
+  documentDate: String, 
+  documentNumber: String, 
+  lineItems: Array<{|    extendedPrice: Number {"typeId": "double"},     inputTotalTax: Number {"typeId": "double"},     lineItemId: String,     lineItemNumber: Number {"typeId": "int"},     product: {|      productClass: String,       value: String    |},     quantity: {|      unitOfMeasure: String,       value: Number {"typeId": "int"}    |},     unitPrice: Number {"typeId": "double"}  |}>, 
+  postingDate: String, 
+  returnAssistedParametersIndicator: Boolean, 
+  returnGeneratedLineItemsIndicator: Boolean, 
+  returnTimeElapsedDetailsIndicator: Boolean, 
+  roundAtLineLevel: Boolean, 
+  saleMessageType: String, 
+  seller: {|
+    administrativeOrigin: {|
+      city: String, 
+      mainDivision: String, 
+      postalCode: String, 
+      streetAddress1: String, 
+      streetAddress2: String
+    |}, 
+    company: String, 
+    division: String, 
+    physicalOrigin: {|
+      city: String, 
+      country: String, 
+      mainDivision: String, 
+      postalCode: String, 
+      streetAddress1: String, 
+      streetAddress2: String
+    |}
+  |}, 
+  transactionId: String, 
+  transactionType: String
+|} {"example": "{\\\"customer\\\":{\\\"customerCode\\\":{\\\"classCode\\\":\\\"Distributors\\\",\\\"isBusinessIndicator\\\":true,\\\"value\\\":\\\"5484878\\\"},\\\"destination\\\":{\\\"city\\\":\\\"Philadelphia\\\",\\\"country\\\":\\\"US\\\",\\\"mainDivision\\\":\\\"PA\\\",\\\"postalCode\\\":\\\"19103\\\",\\\"streetAddress1\\\":\\\"1901 Market Street\\\"},\\\"isTaxExempt\\\":false},\\\"deliveryTerm\\\":\\\"EXW\\\",\\\"documentDate\\\":\\\"2021-09-01\\\",\\\"documentNumber\\\":\\\"INV45787\\\",\\\"lineItems\\\":[{\\\"extendedPrice\\\":530.00,\\\"inputTotalTax\\\":8.00,\\\"lineItemId\\\":\\\"98788\\\",\\\"lineItemNumber\\\":0,\\\"product\\\":{\\\"productClass\\\":\\\"Electronics\\\",\\\"value\\\":\\\"SV4397\\\"},\\\"quantity\\\":{\\\"unitOfMeasure\\\":\\\"ea\\\",\\\"value\\\":2},\\\"unitPrice\\\":265.00}],\\\"postingDate\\\":\\\"2021-09-05\\\",\\\"returnAssistedParametersIndicator\\\":true,\\\"returnGeneratedLineItemsIndicator\\\":true,\\\"returnTimeElapsedDetailsIndicator\\\":true,\\\"roundAtLineLevel\\\":true,\\\"saleMessageType\\\":\\\"DISTRIBUTE_TAX\\\",\\\"seller\\\":{\\\"administrativeOrigin\\\":{\\\"city\\\":\\\"Naperville\\\",\\\"mainDivision\\\":\\\"IL\\\",\\\"postalCode\\\":\\\"60563\\\",\\\"streetAddress1\\\":\\\"40 Shuman Boulevard\\\",\\\"streetAddress2\\\":\\\"Suite 160\\\"},\\\"company\\\":\\\"101\\\",\\\"division\\\":\\\"HQ\\\",\\\"physicalOrigin\\\":{\\\"city\\\":\\\"King of Prussia\\\",\\\"country\\\":\\\"US\\\",\\\"mainDivision\\\":\\\"PA\\\",\\\"postalCode\\\":\\\"19406\\\",\\\"streetAddress1\\\":\\\"2301 Renaissance Blvd\\\",\\\"streetAddress2\\\":\\\"Suite 101\\\"}},\\\"transactionId\\\":\\\"ABC125\\\",\\\"transactionType\\\":\\\"SALE\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="help" format="json">
+      <types:shape format="weave" example="examples/ContactUpsertRequest.json"><![CDATA[%dw 2.0
+
+type help = Array<{|  AccountId: String,   Account_Record_Type__c: String,   Adult__c: String,   Annual_income_after_training_employmen__c: String,   Annual_income_before_training__c: String,   Are_you_still_in_school__c: String,   AssistantName: String,   AssistantPhone: String,   Benefits_health_insurance_included__c: String,   Birthdate: String,   ccrz__CompanyName__c: String,   ccrz__CompanyType__c: String,   ccrz__DataId__c: String,   ccrz__IsPortalUser__c: String,   ccrz__SelfRegistered__c: String,   Community_User_Status__c: String,   contactuser__c: String,   Contact_Age__c: String,   Contact_Status__c: String,   Contact_Type__c: String,   Contact_with_Special_Requirements__c: String,   County__c: String,   CreatedById: String,   CreatedDate: String,   Date_employed_in_healthcare_field__c: String,   Date_passed_state_exam__c: String,   Deactivation_Date__c: String,   Deactivation_Reason__c: String,   Delta_Data_Migration__c: String,   Department: String,   Description: String,   DM_External_Id__c: String,   DM_Legacy_Owner_Name__c: String,   DoNotCall: String,   Do_Not_Mail__c: String,   Do_NOT_Recertify_Contact_QA__c: String,   Do_Not_Text__c: String,   Eligibility_for_economic_need_Student__c: String,   Email: String,   EmailBouncedDate: String,   EmailBouncedReason: String,   Email_Account__c: String,   Employed_full_time_or_part_time__c: String,   Employed_in_healthcare_field__c: String,   Estimated_Annual_Enrollees__c: String,   Ethnicity__c: String,   Extension__c: String,   Fax: String,   FirstName: String,   FN__Find_Nearby__c: String,   FN__Lat__c: String,   FN__Lon__c: String,   FN__Mapping_Address__c: String,   FN__Mapping_Status__c: String,   Follower_Count__c: String,   Gender__c: String,   HasOptedOutOfEmail: String,   HomePhone: String,   Hours_Since_Last_Survey_Sent__c: String,   IBP__IfbyphoneCallId__c: String,   Id: String,   If_part_time_is_this_by_choice__c: String,   If_yes_pursuing_higher_licensur__c: String,   IndividualId: String,   Instructor__c: String,   IsDeleted: String,   IsEmailBounced: String,   Jigsaw: String,   JigsawContactId: String,   Keycode__c: String,   LastActivityDate: String,   LastCURequestDate: String,   LastCUUpdateDate: String,   LastModifiedById: String,   LastModifiedDate: String,   LastName: String,   LastReferencedDate: String,   LastViewedDate: String,   LeadSource: String,   MailingAddress: String,   MailingCity: String,   MailingCountry: String,   MailingGeocodeAccuracy: String,   MailingLatitude: String,   MailingLongitude: String,   MailingPostalCode: String,   MailingState: String,   MailingStreet: String,   MasterRecordId: String,   Master_Constituent_ID__c: String,   Military_Status__c: String,   MobilePhone: String,   Name: String,   NSSCCConnector__Contact_Status__c: String,   NSSCCConnector__From_SFCC__c: String,   NSSCCConnector__SCCLanguages__c: String,   NSSCCConnector__SFCC_Customer_Id__c: String,   NSSCCConnector__SFCC_Customer_Number__c: String,   OtherAddress: String,   OtherCity: String,   OtherCountry: String,   OtherGeocodeAccuracy: String,   OtherLatitude: String,   OtherLongitude: String,   OtherPhone: String,   OtherPostalCode: String,   OtherState: String,   OtherStreet: String,   OwnerId: String,   Phone: String,   PhotoUrl: String,   Preferred_Method_of_Contact__c: String,   Primary_Contact__c: String,   Primary_Product__c: String,   Product_Description__c: String,   Profile__c: String,   Race__c: String,   ReportsToId: String,   Role__c: String,   SABA_Birthdate__c: String,   SABA_BusinessPhone__c: String,   SABA_Email__c: String,   SABA_FirstName__c: String,   SABA_HomePhone__c: String,   SABA_Internal_ID__c: String,   SABA_LastName__c: String,   SABA_MobilePhone__c: String,   Saba_Person_Id__c: String,   SABA_Salutation__c: String,   Salutation: String,   SFMC_invalid__c: String,   sked__Region__c: String,   Source_System__c: String,   State_Format_field__c: String,   Survey_Last_Sent__c: String,   SystemModstamp: String,   Time_Zone__c: String,   Title: String,   Usercontact__c: String,   User__c: String|}> {"example": "[{\\\"AccountId\\\":\\\"\\\",\\\"Account_Record_Type__c\\\":\\\"\\\",\\\"Adult__c\\\":\\\"\\\",\\\"Annual_income_after_training_employmen__c\\\":\\\"\\\",\\\"Annual_income_before_training__c\\\":\\\"\\\",\\\"Are_you_still_in_school__c\\\":\\\"\\\",\\\"AssistantName\\\":\\\"\\\",\\\"AssistantPhone\\\":\\\"\\\",\\\"Benefits_health_insurance_included__c\\\":\\\"\\\",\\\"Birthdate\\\":\\\"\\\",\\\"ccrz__CompanyName__c\\\":\\\"\\\",\\\"ccrz__CompanyType__c\\\":\\\"\\\",\\\"ccrz__DataId__c\\\":\\\"\\\",\\\"ccrz__IsPortalUser__c\\\":\\\"\\\",\\\"ccrz__SelfRegistered__c\\\":\\\"\\\",\\\"Community_User_Status__c\\\":\\\"\\\",\\\"contactuser__c\\\":\\\"\\\",\\\"Contact_Age__c\\\":\\\"\\\",\\\"Contact_Status__c\\\":\\\"\\\",\\\"Contact_Type__c\\\":\\\"\\\",\\\"Contact_with_Special_Requirements__c\\\":\\\"\\\",\\\"County__c\\\":\\\"\\\",\\\"CreatedById\\\":\\\"\\\",\\\"CreatedDate\\\":\\\"\\\",\\\"Date_employed_in_healthcare_field__c\\\":\\\"\\\",\\\"Date_passed_state_exam__c\\\":\\\"\\\",\\\"Deactivation_Date__c\\\":\\\"\\\",\\\"Deactivation_Reason__c\\\":\\\"\\\",\\\"Delta_Data_Migration__c\\\":\\\"\\\",\\\"Department\\\":\\\"\\\",\\\"Description\\\":\\\"\\\",\\\"DM_External_Id__c\\\":\\\"\\\",\\\"DM_Legacy_Owner_Name__c\\\":\\\"\\\",\\\"DoNotCall\\\":\\\"\\\",\\\"Do_Not_Mail__c\\\":\\\"\\\",\\\"Do_NOT_Recertify_Contact_QA__c\\\":\\\"\\\",\\\"Do_Not_Text__c\\\":\\\"\\\",\\\"Eligibility_for_economic_need_Student__c\\\":\\\"\\\",\\\"Email\\\":\\\"\\\",\\\"EmailBouncedDate\\\":\\\"\\\",\\\"EmailBouncedReason\\\":\\\"\\\",\\\"Email_Account__c\\\":\\\"\\\",\\\"Employed_full_time_or_part_time__c\\\":\\\"\\\",\\\"Employed_in_healthcare_field__c\\\":\\\"\\\",\\\"Estimated_Annual_Enrollees__c\\\":\\\"\\\",\\\"Ethnicity__c\\\":\\\"\\\",\\\"Extension__c\\\":\\\"\\\",\\\"Fax\\\":\\\"\\\",\\\"FirstName\\\":\\\"\\\",\\\"FN__Find_Nearby__c\\\":\\\"\\\",\\\"FN__Lat__c\\\":\\\"\\\",\\\"FN__Lon__c\\\":\\\"\\\",\\\"FN__Mapping_Address__c\\\":\\\"\\\",\\\"FN__Mapping_Status__c\\\":\\\"\\\",\\\"Follower_Count__c\\\":\\\"\\\",\\\"Gender__c\\\":\\\"\\\",\\\"HasOptedOutOfEmail\\\":\\\"\\\",\\\"HomePhone\\\":\\\"\\\",\\\"Hours_Since_Last_Survey_Sent__c\\\":\\\"\\\",\\\"IBP__IfbyphoneCallId__c\\\":\\\"\\\",\\\"Id\\\":\\\"\\\",\\\"If_part_time_is_this_by_choice__c\\\":\\\"\\\",\\\"If_yes_pursuing_higher_licensur__c\\\":\\\"\\\",\\\"IndividualId\\\":\\\"\\\",\\\"Instructor__c\\\":\\\"\\\",\\\"IsDeleted\\\":\\\"\\\",\\\"IsEmailBounced\\\":\\\"\\\",\\\"Jigsaw\\\":\\\"\\\",\\\"JigsawContactId\\\":\\\"\\\",\\\"Keycode__c\\\":\\\"\\\",\\\"LastActivityDate\\\":\\\"\\\",\\\"LastCURequestDate\\\":\\\"\\\",\\\"LastCUUpdateDate\\\":\\\"\\\",\\\"LastModifiedById\\\":\\\"\\\",\\\"LastModifiedDate\\\":\\\"\\\",\\\"LastName\\\":\\\"\\\",\\\"LastReferencedDate\\\":\\\"\\\",\\\"LastViewedDate\\\":\\\"\\\",\\\"LeadSource\\\":\\\"\\\",\\\"MailingAddress\\\":\\\"\\\",\\\"MailingCity\\\":\\\"\\\",\\\"MailingCountry\\\":\\\"\\\",\\\"MailingGeocodeAccuracy\\\":\\\"\\\",\\\"MailingLatitude\\\":\\\"\\\",\\\"MailingLongitude\\\":\\\"\\\",\\\"MailingPostalCode\\\":\\\"\\\",\\\"MailingState\\\":\\\"\\\",\\\"MailingStreet\\\":\\\"\\\",\\\"MasterRecordId\\\":\\\"\\\",\\\"Master_Constituent_ID__c\\\":\\\"\\\",\\\"Military_Status__c\\\":\\\"\\\",\\\"MobilePhone\\\":\\\"\\\",\\\"Name\\\":\\\"\\\",\\\"NSSCCConnector__Contact_Status__c\\\":\\\"\\\",\\\"NSSCCConnector__From_SFCC__c\\\":\\\"\\\",\\\"NSSCCConnector__SCCLanguages__c\\\":\\\"\\\",\\\"NSSCCConnector__SFCC_Customer_Id__c\\\":\\\"\\\",\\\"NSSCCConnector__SFCC_Customer_Number__c\\\":\\\"\\\",\\\"OtherAddress\\\":\\\"\\\",\\\"OtherCity\\\":\\\"\\\",\\\"OtherCountry\\\":\\\"\\\",\\\"OtherGeocodeAccuracy\\\":\\\"\\\",\\\"OtherLatitude\\\":\\\"\\\",\\\"OtherLongitude\\\":\\\"\\\",\\\"OtherPhone\\\":\\\"\\\",\\\"OtherPostalCode\\\":\\\"\\\",\\\"OtherState\\\":\\\"\\\",\\\"OtherStreet\\\":\\\"\\\",\\\"OwnerId\\\":\\\"\\\",\\\"Phone\\\":\\\"\\\",\\\"PhotoUrl\\\":\\\"\\\",\\\"Preferred_Method_of_Contact__c\\\":\\\"\\\",\\\"Primary_Contact__c\\\":\\\"\\\",\\\"Primary_Product__c\\\":\\\"\\\",\\\"Product_Description__c\\\":\\\"\\\",\\\"Profile__c\\\":\\\"\\\",\\\"Race__c\\\":\\\"\\\",\\\"ReportsToId\\\":\\\"\\\",\\\"Role__c\\\":\\\"\\\",\\\"SABA_Birthdate__c\\\":\\\"\\\",\\\"SABA_BusinessPhone__c\\\":\\\"\\\",\\\"SABA_Email__c\\\":\\\"\\\",\\\"SABA_FirstName__c\\\":\\\"\\\",\\\"SABA_HomePhone__c\\\":\\\"\\\",\\\"SABA_Internal_ID__c\\\":\\\"\\\",\\\"SABA_LastName__c\\\":\\\"\\\",\\\"SABA_MobilePhone__c\\\":\\\"\\\",\\\"Saba_Person_Id__c\\\":\\\"\\\",\\\"SABA_Salutation__c\\\":\\\"\\\",\\\"Salutation\\\":\\\"\\\",\\\"SFMC_invalid__c\\\":\\\"\\\",\\\"sked__Region__c\\\":\\\"\\\",\\\"Source_System__c\\\":\\\"\\\",\\\"State_Format_field__c\\\":\\\"\\\",\\\"Survey_Last_Sent__c\\\":\\\"\\\",\\\"SystemModstamp\\\":\\\"\\\",\\\"Time_Zone__c\\\":\\\"\\\",\\\"Title\\\":\\\"\\\",\\\"Usercontact__c\\\":\\\"\\\",\\\"User__c\\\":\\\"\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="TaxObjectExportGroupByOrder" format="json">
+      <types:shape format="weave" example="examples/TaxOrderExportGroupByOrder-4.json"><![CDATA[%dw 2.0
+
+type TaxObjectExportGroupByOrder = {|
+  "6392698": Array<{|    LastModifiedDate: String,     Org_Name__c: String,     Order_Number__c: String,     LastReferencedDate: Null,     Billing_City__c: Null,     "type": String,     Billing_Contact_Name__c: String,     Name: String,     Quantity__c: String,     CreatedById: String,     OwnerId: String,     Tax_Amount__c: String,     Line_Item_Id__c: String,     IsDeleted: String,     isTaxOnlyAdjustmentIndicator__c: String,     GL_Code__c: String,     Billing_State__c: Null,     LastViewedDate: Null,     Billing_Street__c: Null,     Product_Name__c: String,     Batch_Status__c: String,     SystemModstamp: String,     AP_Code__c: String,     Amount__c: String,     Billing_Street_2__c: Null,     CreatedDate: String,     Phone__c: Null,     Product_SKU__c: String,     Id: String,     Batch_Id__c: Null,     Org_Id__c: String,     Tax_Class__c: String,     Tax_Status__c: String,     LastModifiedById: String,     Transaction_Date__c: String,     Batch_Message__c: Null,     Billing_Postalcode__c: Null,     Vertex_Batch_Export_Date__c: Null,     vertex_batch_id__c: Null  |}>
+|} {"example": "{\\\"6392698\\\":[{\\\"LastModifiedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Org_Name__c\\\":\\\"The Samantha Khoury Account\\\",\\\"Order_Number__c\\\":\\\"6392698\\\",\\\"LastReferencedDate\\\":null,\\\"Billing_City__c\\\":null,\\\"type\\\":\\\"Tax_Order_Export__c\\\",\\\"Billing_Contact_Name__c\\\":\\\"Samantha Khoury\\\",\\\"Name\\\":\\\"aAJ6C0000000Hpn\\\",\\\"Quantity__c\\\":\\\"1.0\\\",\\\"CreatedById\\\":\\\"0053o000009COyMAAW\\\",\\\"OwnerId\\\":\\\"0053o000009COyMAAW\\\",\\\"Tax_Amount__c\\\":\\\"11.14\\\",\\\"Line_Item_Id__c\\\":\\\"4823719\\\",\\\"IsDeleted\\\":\\\"false\\\",\\\"isTaxOnlyAdjustmentIndicator__c\\\":\\\"false\\\",\\\"GL_Code__c\\\":\\\"6220\\\",\\\"Billing_State__c\\\":null,\\\"LastViewedDate\\\":null,\\\"Billing_Street__c\\\":null,\\\"Product_Name__c\\\":\\\"Basic Life Support Instructor-BL\\\",\\\"Batch_Status__c\\\":\\\"New\\\",\\\"SystemModstamp\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"AP_Code__c\\\":\\\"6220\\\",\\\"Amount__c\\\":\\\"269.78\\\",\\\"Billing_Street_2__c\\\":null,\\\"CreatedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Phone__c\\\":null,\\\"Product_SKU__c\\\":\\\"COM-HSSBLS801 r.19-BL\\\",\\\"Id\\\":\\\"aAJ6C0000000HpnWAE\\\",\\\"Batch_Id__c\\\":null,\\\"Org_Id__c\\\":\\\"SF07756196\\\",\\\"Tax_Class__c\\\":\\\"COURSE W PRODUCT\\\",\\\"Tax_Status__c\\\":\\\"Nontaxable\\\",\\\"LastModifiedById\\\":\\\"0053o000009COyMAAW\\\",\\\"Transaction_Date__c\\\":\\\"2022-02-25T21:07:13.000Z\\\",\\\"Batch_Message__c\\\":null,\\\"Billing_Postalcode__c\\\":null,\\\"Vertex_Batch_Export_Date__c\\\":null,\\\"vertex_batch_id__c\\\":null}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Payload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c86998ca-70df-4c33-90df-e420ced90ada/Input-Payload.wev" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[%dw 2.0
+
+type auto_c86998ca_70df_4c33_90df_e420ced90ada_Input_Payload = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-ExportDate" format="java">
+      <types:shape format="raml" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-VertexTransactionId" format="json">
+      <types:shape format="weave" example="weave/autogenerated/c86998ca-70df-4c33-90df-e420ced90ada/Input-Variables-VertexTransactionId.wev" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[%dw 2.0
+
+type auto_c86998ca_70df_4c33_90df_e420ced90ada_Input_Variables_VertexTransactionId = String
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-NumberOfOrdersProcessed" format="java">
+      <types:shape format="raml" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-OriginalOrderItems" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c86998ca-70df-4c33-90df-e420ced90ada/Input-Variables-OriginalOrderItems.wev" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[%dw 2.0
+
+type auto_c86998ca_70df_4c33_90df_e420ced90ada_Input_Variables_OriginalOrderItems = {|
+  "6392698": Array<{|    LastModifiedDate: String,     Org_Name__c: String,     Order_Number__c: String,     LastReferencedDate: Null,     Billing_City__c: Null,     "type": String,     Billing_Contact_Name__c: String,     Name: String,     Quantity__c: String,     CreatedById: String,     OwnerId: String,     Tax_Amount__c: String,     Line_Item_Id__c: String,     IsDeleted: String,     GL_Code__c: String,     Billing_State__c: Null,     LastViewedDate: Null,     Billing_Street__c: Null,     Product_Name__c: String,     Batch_Status__c: String,     SystemModstamp: String,     AP_Code__c: String,     Amount__c: String,     Billing_Street_2__c: Null,     CreatedDate: String,     Phone__c: Null,     Product_SKU__c: String,     Id: String,     Batch_Id__c: Null,     Org_Id__c: String,     Tax_Class__c: String,     LastModifiedById: String,     Transaction_Date__c: String,     Batch_Message__c: Null,     Billing_Postalcode__c: Null,     Vertex_Batch_Export_Date__c: Null,     vertex_batch_id__c: Null  |}>
+|} {"example": "{\\\"6392698\\\":[{\\\"LastModifiedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Org_Name__c\\\":\\\"The Samantha Khoury Account\\\",\\\"Order_Number__c\\\":\\\"6392698\\\",\\\"LastReferencedDate\\\":null,\\\"Billing_City__c\\\":null,\\\"type\\\":\\\"Tax_Order_Export__c\\\",\\\"Billing_Contact_Name__c\\\":\\\"Samantha Khoury\\\",\\\"Name\\\":\\\"aAJ6C0000000Hpn\\\",\\\"Quantity__c\\\":\\\"1.0\\\",\\\"CreatedById\\\":\\\"0053o000009COyMAAW\\\",\\\"OwnerId\\\":\\\"0053o000009COyMAAW\\\",\\\"Tax_Amount__c\\\":\\\"11.14\\\",\\\"Line_Item_Id__c\\\":\\\"4823719\\\",\\\"IsDeleted\\\":\\\"false\\\",\\\"GL_Code__c\\\":\\\"6220\\\",\\\"Billing_State__c\\\":null,\\\"LastViewedDate\\\":null,\\\"Billing_Street__c\\\":null,\\\"Product_Name__c\\\":\\\"Basic Life Support Instructor-BL\\\",\\\"Batch_Status__c\\\":\\\"New\\\",\\\"SystemModstamp\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"AP_Code__c\\\":\\\"6220\\\",\\\"Amount__c\\\":\\\"269.78\\\",\\\"Billing_Street_2__c\\\":null,\\\"CreatedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Phone__c\\\":null,\\\"Product_SKU__c\\\":\\\"COM-HSSBLS801 r.19-BL\\\",\\\"Id\\\":\\\"aAJ6C0000000HpnWAE\\\",\\\"Batch_Id__c\\\":null,\\\"Org_Id__c\\\":\\\"SF07756196\\\",\\\"Tax_Class__c\\\":\\\"COURSE W PRODUCT\\\",\\\"LastModifiedById\\\":\\\"0053o000009COyMAAW\\\",\\\"Transaction_Date__c\\\":\\\"2022-02-25T21:07:13.000Z\\\",\\\"Batch_Message__c\\\":null,\\\"Billing_Postalcode__c\\\":null,\\\"Vertex_Batch_Export_Date__c\\\":null,\\\"vertex_batch_id__c\\\":null}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Payload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c86998ca-70df-4c33-90df-e420ced90ada/Output-Payload.wev" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[%dw 2.0
+
+type auto_c86998ca_70df_4c33_90df_e420ced90ada_Output_Payload = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-ExportDate" format="java">
+      <types:shape format="raml" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-VertexTransactionId" format="json">
+      <types:shape format="weave" example="weave/autogenerated/c86998ca-70df-4c33-90df-e420ced90ada/Output-Variables-VertexTransactionId.wev" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[%dw 2.0
+
+type auto_c86998ca_70df_4c33_90df_e420ced90ada_Output_Variables_VertexTransactionId = String
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-NumberOfOrdersProcessed" format="java">
+      <types:shape format="raml" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+    <types:type name="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-OriginalOrderItems" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c86998ca-70df-4c33-90df-e420ced90ada/Output-Variables-OriginalOrderItems.wev" autogeneratedOrigin="60ed69bf-eef1-41c5-ae17-cec88723a696"><![CDATA[%dw 2.0
+
+type auto_c86998ca_70df_4c33_90df_e420ced90ada_Output_Variables_OriginalOrderItems = {|
+  "6392698": Array<{|    LastModifiedDate: String,     Org_Name__c: String,     Order_Number__c: String,     LastReferencedDate: Null,     Billing_City__c: Null,     "type": String,     Billing_Contact_Name__c: String,     Name: String,     Quantity__c: String,     CreatedById: String,     OwnerId: String,     Tax_Amount__c: String,     Line_Item_Id__c: String,     IsDeleted: String,     GL_Code__c: String,     Billing_State__c: Null,     LastViewedDate: Null,     Billing_Street__c: Null,     Product_Name__c: String,     Batch_Status__c: String,     SystemModstamp: String,     AP_Code__c: String,     Amount__c: String,     Billing_Street_2__c: Null,     CreatedDate: String,     Phone__c: Null,     Product_SKU__c: String,     Id: String,     Batch_Id__c: Null,     Org_Id__c: String,     Tax_Class__c: String,     LastModifiedById: String,     Transaction_Date__c: String,     Batch_Message__c: Null,     Billing_Postalcode__c: Null,     Vertex_Batch_Export_Date__c: Null,     vertex_batch_id__c: Null  |}>
+|} {"example": "{\\\"6392698\\\":[{\\\"LastModifiedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Org_Name__c\\\":\\\"The Samantha Khoury Account\\\",\\\"Order_Number__c\\\":\\\"6392698\\\",\\\"LastReferencedDate\\\":null,\\\"Billing_City__c\\\":null,\\\"type\\\":\\\"Tax_Order_Export__c\\\",\\\"Billing_Contact_Name__c\\\":\\\"Samantha Khoury\\\",\\\"Name\\\":\\\"aAJ6C0000000Hpn\\\",\\\"Quantity__c\\\":\\\"1.0\\\",\\\"CreatedById\\\":\\\"0053o000009COyMAAW\\\",\\\"OwnerId\\\":\\\"0053o000009COyMAAW\\\",\\\"Tax_Amount__c\\\":\\\"11.14\\\",\\\"Line_Item_Id__c\\\":\\\"4823719\\\",\\\"IsDeleted\\\":\\\"false\\\",\\\"GL_Code__c\\\":\\\"6220\\\",\\\"Billing_State__c\\\":null,\\\"LastViewedDate\\\":null,\\\"Billing_Street__c\\\":null,\\\"Product_Name__c\\\":\\\"Basic Life Support Instructor-BL\\\",\\\"Batch_Status__c\\\":\\\"New\\\",\\\"SystemModstamp\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"AP_Code__c\\\":\\\"6220\\\",\\\"Amount__c\\\":\\\"269.78\\\",\\\"Billing_Street_2__c\\\":null,\\\"CreatedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Phone__c\\\":null,\\\"Product_SKU__c\\\":\\\"COM-HSSBLS801 r.19-BL\\\",\\\"Id\\\":\\\"aAJ6C0000000HpnWAE\\\",\\\"Batch_Id__c\\\":null,\\\"Org_Id__c\\\":\\\"SF07756196\\\",\\\"Tax_Class__c\\\":\\\"COURSE W PRODUCT\\\",\\\"LastModifiedById\\\":\\\"0053o000009COyMAAW\\\",\\\"Transaction_Date__c\\\":\\\"2022-02-25T21:07:13.000Z\\\",\\\"Batch_Message__c\\\":null,\\\"Billing_Postalcode__c\\\":null,\\\"Vertex_Batch_Export_Date__c\\\":null,\\\"vertex_batch_id__c\\\":null}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Payload" format="json">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Input-Payload.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Input_Payload = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Input-Attributes.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Input_Attributes = {|
+  statusCode: Number, 
+  reasonPhrase: String, 
+  headers: { _?: String }
+|} {"typeAlias": "HttpResponseAttributes",
+"typeId": "org.mule.extension.http.api.HttpResponseAttributes"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-ExportDate" format="java">
+      <types:shape format="raml" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-VertexTransactionId" format="json">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Input-Variables-VertexTransactionId.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Input_Variables_VertexTransactionId = String
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-NumberOfOrdersProcessed" format="java">
+      <types:shape format="raml" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-OriginalOrderItems" format="java">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Input-Variables-OriginalOrderItems.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Input_Variables_OriginalOrderItems = {|
+  "6392698": Array<{|    LastModifiedDate: String,     Org_Name__c: String,     Order_Number__c: String,     LastReferencedDate: Null,     Billing_City__c: Null,     "type": String,     Billing_Contact_Name__c: String,     Name: String,     Quantity__c: String,     CreatedById: String,     OwnerId: String,     Tax_Amount__c: String,     Line_Item_Id__c: String,     IsDeleted: String,     GL_Code__c: String,     Billing_State__c: Null,     LastViewedDate: Null,     Billing_Street__c: Null,     Product_Name__c: String,     Batch_Status__c: String,     SystemModstamp: String,     AP_Code__c: String,     Amount__c: String,     Billing_Street_2__c: Null,     CreatedDate: String,     Phone__c: Null,     Product_SKU__c: String,     Id: String,     Batch_Id__c: Null,     Org_Id__c: String,     Tax_Class__c: String,     LastModifiedById: String,     Transaction_Date__c: String,     Batch_Message__c: Null,     Billing_Postalcode__c: Null,     Vertex_Batch_Export_Date__c: Null,     vertex_batch_id__c: Null  |}>
+|} {"example": "{\\\"6392698\\\":[{\\\"LastModifiedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Org_Name__c\\\":\\\"The Samantha Khoury Account\\\",\\\"Order_Number__c\\\":\\\"6392698\\\",\\\"LastReferencedDate\\\":null,\\\"Billing_City__c\\\":null,\\\"type\\\":\\\"Tax_Order_Export__c\\\",\\\"Billing_Contact_Name__c\\\":\\\"Samantha Khoury\\\",\\\"Name\\\":\\\"aAJ6C0000000Hpn\\\",\\\"Quantity__c\\\":\\\"1.0\\\",\\\"CreatedById\\\":\\\"0053o000009COyMAAW\\\",\\\"OwnerId\\\":\\\"0053o000009COyMAAW\\\",\\\"Tax_Amount__c\\\":\\\"11.14\\\",\\\"Line_Item_Id__c\\\":\\\"4823719\\\",\\\"IsDeleted\\\":\\\"false\\\",\\\"GL_Code__c\\\":\\\"6220\\\",\\\"Billing_State__c\\\":null,\\\"LastViewedDate\\\":null,\\\"Billing_Street__c\\\":null,\\\"Product_Name__c\\\":\\\"Basic Life Support Instructor-BL\\\",\\\"Batch_Status__c\\\":\\\"New\\\",\\\"SystemModstamp\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"AP_Code__c\\\":\\\"6220\\\",\\\"Amount__c\\\":\\\"269.78\\\",\\\"Billing_Street_2__c\\\":null,\\\"CreatedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Phone__c\\\":null,\\\"Product_SKU__c\\\":\\\"COM-HSSBLS801 r.19-BL\\\",\\\"Id\\\":\\\"aAJ6C0000000HpnWAE\\\",\\\"Batch_Id__c\\\":null,\\\"Org_Id__c\\\":\\\"SF07756196\\\",\\\"Tax_Class__c\\\":\\\"COURSE W PRODUCT\\\",\\\"LastModifiedById\\\":\\\"0053o000009COyMAAW\\\",\\\"Transaction_Date__c\\\":\\\"2022-02-25T21:07:13.000Z\\\",\\\"Batch_Message__c\\\":null,\\\"Billing_Postalcode__c\\\":null,\\\"Vertex_Batch_Export_Date__c\\\":null,\\\"vertex_batch_id__c\\\":null}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Payload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Output-Payload.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Output_Payload = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Output-Attributes.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Output_Attributes = Null
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-ExportDate" format="java">
+      <types:shape format="raml" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-VertexTransactionId" format="json">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Output-Variables-VertexTransactionId.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Output_Variables_VertexTransactionId = String
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-NumberOfOrdersProcessed" format="java">
+      <types:shape format="raml" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-OriginalOrderItems" format="java">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Output-Variables-OriginalOrderItems.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Output_Variables_OriginalOrderItems = {|
+  "6392698": Array<{|    LastModifiedDate: String,     Org_Name__c: String,     Order_Number__c: String,     LastReferencedDate: Null,     Billing_City__c: Null,     "type": String,     Billing_Contact_Name__c: String,     Name: String,     Quantity__c: String,     CreatedById: String,     OwnerId: String,     Tax_Amount__c: String,     Line_Item_Id__c: String,     IsDeleted: String,     GL_Code__c: String,     Billing_State__c: Null,     LastViewedDate: Null,     Billing_Street__c: Null,     Product_Name__c: String,     Batch_Status__c: String,     SystemModstamp: String,     AP_Code__c: String,     Amount__c: String,     Billing_Street_2__c: Null,     CreatedDate: String,     Phone__c: Null,     Product_SKU__c: String,     Id: String,     Batch_Id__c: Null,     Org_Id__c: String,     Tax_Class__c: String,     LastModifiedById: String,     Transaction_Date__c: String,     Batch_Message__c: Null,     Billing_Postalcode__c: Null,     Vertex_Batch_Export_Date__c: Null,     vertex_batch_id__c: Null  |}>
+|} {"example": "{\\\"6392698\\\":[{\\\"LastModifiedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Org_Name__c\\\":\\\"The Samantha Khoury Account\\\",\\\"Order_Number__c\\\":\\\"6392698\\\",\\\"LastReferencedDate\\\":null,\\\"Billing_City__c\\\":null,\\\"type\\\":\\\"Tax_Order_Export__c\\\",\\\"Billing_Contact_Name__c\\\":\\\"Samantha Khoury\\\",\\\"Name\\\":\\\"aAJ6C0000000Hpn\\\",\\\"Quantity__c\\\":\\\"1.0\\\",\\\"CreatedById\\\":\\\"0053o000009COyMAAW\\\",\\\"OwnerId\\\":\\\"0053o000009COyMAAW\\\",\\\"Tax_Amount__c\\\":\\\"11.14\\\",\\\"Line_Item_Id__c\\\":\\\"4823719\\\",\\\"IsDeleted\\\":\\\"false\\\",\\\"GL_Code__c\\\":\\\"6220\\\",\\\"Billing_State__c\\\":null,\\\"LastViewedDate\\\":null,\\\"Billing_Street__c\\\":null,\\\"Product_Name__c\\\":\\\"Basic Life Support Instructor-BL\\\",\\\"Batch_Status__c\\\":\\\"New\\\",\\\"SystemModstamp\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"AP_Code__c\\\":\\\"6220\\\",\\\"Amount__c\\\":\\\"269.78\\\",\\\"Billing_Street_2__c\\\":null,\\\"CreatedDate\\\":\\\"2022-03-02T15:31:43.000Z\\\",\\\"Phone__c\\\":null,\\\"Product_SKU__c\\\":\\\"COM-HSSBLS801 r.19-BL\\\",\\\"Id\\\":\\\"aAJ6C0000000HpnWAE\\\",\\\"Batch_Id__c\\\":null,\\\"Org_Id__c\\\":\\\"SF07756196\\\",\\\"Tax_Class__c\\\":\\\"COURSE W PRODUCT\\\",\\\"LastModifiedById\\\":\\\"0053o000009COyMAAW\\\",\\\"Transaction_Date__c\\\":\\\"2022-02-25T21:07:13.000Z\\\",\\\"Batch_Message__c\\\":null,\\\"Billing_Postalcode__c\\\":null,\\\"Vertex_Batch_Export_Date__c\\\":null,\\\"vertex_batch_id__c\\\":null}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-InboundPayload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/91f98944-dff2-40a2-8b28-58b6c072a6b6/Output-Variables-InboundPayload.wev" autogeneratedOrigin="db8524fc-4b8e-4963-b18a-7ffa68c21aab"><![CDATA[%dw 2.0
+
+type auto_91f98944_dff2_40a2_8b28_58b6c072a6b6_Output_Variables_InboundPayload = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Input-Payload" format="json">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Input-Payload.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Input_Payload = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Input-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Input-Attributes.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Input_Attributes = {|
+  timestamp: DateTime {"typeId": "java.time.LocalDateTime"}, 
+  size: Number, 
+  regularSize?: Boolean {"typeId": "boolean"}, 
+  directory?: Boolean {"typeId": "boolean"}, 
+  symbolicLink?: Boolean {"typeId": "boolean"}, 
+  path: String, 
+  fileName: String
+|} {"typeAlias": "SftpFileAttributes",
+"typeId": "org.mule.extension.sftp.api.SftpFileAttributes"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Payload" format="json">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Output-Payload.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Output_Payload = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Output-Attributes.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Output_Attributes = {|
+  timestamp: DateTime {"typeId": "java.time.LocalDateTime"}, 
+  size: Number, 
+  regularSize?: Boolean {"typeId": "boolean"}, 
+  directory?: Boolean {"typeId": "boolean"}, 
+  symbolicLink?: Boolean {"typeId": "boolean"}, 
+  path: String, 
+  fileName: String
+|} {"typeAlias": "SftpFileAttributes",
+"typeId": "org.mule.extension.sftp.api.SftpFileAttributes"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-fileName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-NumberOfOrdersProcessed" format="java">
+      <types:shape format="raml" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-taxMonthlyReportJson" format="json">
+      <types:shape format="weave" example="examples/TaxOrderExportGetResponse-4.json" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Output_Variables_taxMonthlyReportJson = Array<{|  Amount__c: String,   AP_Code__c: String,   Batch_Id__c: String,   Batch_Message__c: String,   Batch_Status__c: String,   Billing_City__c: String,   Billing_Contact_Name__c: String,   Billing_Postalcode__c: String,   Billing_State__c: String,   Billing_Street_2__c: String,   Billing_Street__c: String,   CreatedById: String,   CreatedDate: String,   GL_Code__c: String,   Id: String,   IsDeleted: String,   LastModifiedById: String,   LastModifiedDate: String,   LastReferencedDate: String,   LastViewedDate: String,   Line_Item_Id__c: String,   Name: String,   Order_Number__c: String,   Org_Id__c: String,   Org_Name__c: String,   OwnerId: String,   Phone__c: String,   Product_Name__c: String,   Product_SKU__c: String,   Quantity__c: String,   SystemModstamp: String,   Tax_Amount__c: String,   Tax_Class__c: String,   Transaction_Date__c: String,   Vertex_Batch_Export_Date__c: String,   vertex_batch_id__c: String|}> {"example": "[{\\\"Amount__c\\\":\\\"\\\",\\\"AP_Code__c\\\":\\\"\\\",\\\"Batch_Id__c\\\":\\\"\\\",\\\"Batch_Message__c\\\":\\\"\\\",\\\"Batch_Status__c\\\":\\\"\\\",\\\"Billing_City__c\\\":\\\"\\\",\\\"Billing_Contact_Name__c\\\":\\\"\\\",\\\"Billing_Postalcode__c\\\":\\\"\\\",\\\"Billing_State__c\\\":\\\"\\\",\\\"Billing_Street_2__c\\\":\\\"\\\",\\\"Billing_Street__c\\\":\\\"\\\",\\\"CreatedById\\\":\\\"\\\",\\\"CreatedDate\\\":\\\"\\\",\\\"GL_Code__c\\\":\\\"\\\",\\\"Id\\\":\\\"\\\",\\\"IsDeleted\\\":\\\"\\\",\\\"LastModifiedById\\\":\\\"\\\",\\\"LastModifiedDate\\\":\\\"\\\",\\\"LastReferencedDate\\\":\\\"\\\",\\\"LastViewedDate\\\":\\\"\\\",\\\"Line_Item_Id__c\\\":\\\"\\\",\\\"Name\\\":\\\"\\\",\\\"Order_Number__c\\\":\\\"\\\",\\\"Org_Id__c\\\":\\\"\\\",\\\"Org_Name__c\\\":\\\"\\\",\\\"OwnerId\\\":\\\"\\\",\\\"Phone__c\\\":\\\"\\\",\\\"Product_Name__c\\\":\\\"\\\",\\\"Product_SKU__c\\\":\\\"\\\",\\\"Quantity__c\\\":\\\"\\\",\\\"SystemModstamp\\\":\\\"\\\",\\\"Tax_Amount__c\\\":\\\"\\\",\\\"Tax_Class__c\\\":\\\"\\\",\\\"Transaction_Date__c\\\":\\\"\\\",\\\"Vertex_Batch_Export_Date__c\\\":\\\"\\\",\\\"vertex_batch_id__c\\\":\\\"\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-oAuthAccessTokenData" format="json">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Output-Variables-oAuthAccessTokenData.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Output_Variables_oAuthAccessTokenData = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-TaxObjectExportCSV" format="csv">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Output-Variables-TaxObjectExportCSV.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Output_Variables_TaxObjectExportCSV = Array<{|  Amount__c: String,   AP_Code__c: String,   Batch_Id__c: String,   Batch_Message__c: String,   Batch_Status__c: String,   Billing_City__c: String,   Billing_Contact_Name__c: String,   Billing_Postalcode__c: String,   Billing_State__c: String,   Billing_Street_2__c: String,   Billing_Street__c: String,   CreatedById: String,   CreatedDate: String,   GL_Code__c: String,   Id: String,   IsDeleted: String,   LastModifiedById: String,   LastModifiedDate: String,   LastReferencedDate: String,   LastViewedDate: String,   Line_Item_Id__c: String,   Name: String,   Order_Number__c: String,   Org_Id__c: String,   Org_Name__c: String,   OwnerId: String,   Phone__c: String,   Product_Name__c: String,   Product_SKU__c: String,   Quantity__c: String,   SystemModstamp: String,   Tax_Amount__c: String,   Tax_Class__c: String,   Transaction_Date__c: String,   Vertex_Batch_Export_Date__c: String,   vertex_batch_id__c: String|}> {"example": "[{\\\"Amount__c\\\":\\\"\\\",\\\"AP_Code__c\\\":\\\"\\\",\\\"Batch_Id__c\\\":\\\"\\\",\\\"Batch_Message__c\\\":\\\"\\\",\\\"Batch_Status__c\\\":\\\"\\\",\\\"Billing_City__c\\\":\\\"\\\",\\\"Billing_Contact_Name__c\\\":\\\"\\\",\\\"Billing_Postalcode__c\\\":\\\"\\\",\\\"Billing_State__c\\\":\\\"\\\",\\\"Billing_Street_2__c\\\":\\\"\\\",\\\"Billing_Street__c\\\":\\\"\\\",\\\"CreatedById\\\":\\\"\\\",\\\"CreatedDate\\\":\\\"\\\",\\\"GL_Code__c\\\":\\\"\\\",\\\"Id\\\":\\\"\\\",\\\"IsDeleted\\\":\\\"\\\",\\\"LastModifiedById\\\":\\\"\\\",\\\"LastModifiedDate\\\":\\\"\\\",\\\"LastReferencedDate\\\":\\\"\\\",\\\"LastViewedDate\\\":\\\"\\\",\\\"Line_Item_Id__c\\\":\\\"\\\",\\\"Name\\\":\\\"\\\",\\\"Order_Number__c\\\":\\\"\\\",\\\"Org_Id__c\\\":\\\"\\\",\\\"Org_Name__c\\\":\\\"\\\",\\\"OwnerId\\\":\\\"\\\",\\\"Phone__c\\\":\\\"\\\",\\\"Product_Name__c\\\":\\\"\\\",\\\"Product_SKU__c\\\":\\\"\\\",\\\"Quantity__c\\\":\\\"\\\",\\\"SystemModstamp\\\":\\\"\\\",\\\"Tax_Amount__c\\\":\\\"\\\",\\\"Tax_Class__c\\\":\\\"\\\",\\\"Transaction_Date__c\\\":\\\"\\\",\\\"Vertex_Batch_Export_Date__c\\\":\\\"\\\",\\\"vertex_batch_id__c\\\":\\\"\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Today" format="java">
+      <types:shape format="raml" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-lastTransactionDate" format="java">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Output-Variables-lastTransactionDate.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Output_Variables_lastTransactionDate = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Send_Report" format="java">
+      <types:shape format="raml" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Persist_Date" format="java">
+      <types:shape format="raml" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Send_Email" format="java">
+      <types:shape format="raml" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-fileContent" format="java">
+      <types:shape format="weave" example="weave/autogenerated/8d4a8575-e9c9-4add-a854-7413e2fc597c/Output-Variables-fileContent.wev" autogeneratedOrigin="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3"><![CDATA[%dw 2.0
+
+type auto_8d4a8575_e9c9_4add_a854_7413e2fc597c_Output_Variables_fileContent = String | Binary | Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="JDETaxReport" format="json">
+      <types:shape format="weave" example="examples/JDE_SalesTax_Report-2.json"><![CDATA[%dw 2.0
+
+type JDETaxReport = Array<{|  AdminOriginTaxAreaID: String,   CustomerCode: String,   DestinationTaxAreaID: String,   DocumentNumber: String,   ExtendedPrice: String,   FinancialEventType: String,   GrossAmount: String,   ImpositionName: String,   ImpositionType: String,   JurisdictionID: String,   JurisdictionName: String,   JurisdictionType: String,   LineItemID: String,   LineItemNumber: String,   LineItemTaxDetailID: String,   LineItemTaxID: String,   NegativeTaxIndicator: String,   NonTaxableAmount: String,   PhysicalOriginTaxAreaID: String,   PostingDate: String,   ProductCode: String,   ProductName: String,   Quantity: String,   SitusCityName: String,   SitusCountryCode2: String,   SitusCountryCode3: String,   SitusCountryName: String,   SitusMainDivision: String,   SitusSubDivision: String,   SitusTaxAreaID: String,   TaxAmount: String,   TaxDate: String,   TaxRate: String,   TaxResultType: String,   TaxtobeCollectedFrom: String,   TaxType: String,   TaxableAmount: String,   TaxpayerCompanyCode: String,   TaxpayerCompanyName: String,   TaxpayerDivisionCode: String,   TransactionID: String,   TransactionPerspective: String,   TransactionProcessDate: String,   TransactionType: String|}> {"example": "[{\\\"AdminOriginTaxAreaID\\\":\\\"250330720\\\",\\\"CustomerCode\\\":\\\"2327277\\\",\\\"DestinationTaxAreaID\\\":\\\"410790230\\\",\\\"DocumentNumber\\\":\\\"71537\\\",\\\"ExtendedPrice\\\":\\\"5.89\\\",\\\"FinancialEventType\\\":\\\"Invoice\\\",\\\"GrossAmount\\\":\\\"5.89\\\",\\\"ImpositionName\\\":\\\"Sales and Use Tax\\\",\\\"ImpositionType\\\":\\\"General Sales and Use Tax\\\",\\\"JurisdictionID\\\":\\\"33809\\\",\\\"JurisdictionName\\\":\\\"SOUTH CAROLINA\\\",\\\"JurisdictionType\\\":\\\"STATE\\\",\\\"LineItemID\\\":\\\"410644\\\",\\\"LineItemNumber\\\":\\\"2000\\\",\\\"LineItemTaxDetailID\\\":\\\"169309\\\",\\\"LineItemTaxID\\\":\\\"410668\\\",\\\"NegativeTaxIndicator\\\":\\\"No\\\",\\\"NonTaxableAmount\\\":\\\"0\\\",\\\"PhysicalOriginTaxAreaID\\\":\\\"250330720\\\",\\\"PostingDate\\\":\\\"3\\/4\\/2022\\\",\\\"ProductCode\\\":\\\"FREIGHT\\\",\\\"ProductName\\\":\\\"\\\",\\\"Quantity\\\":\\\"1\\\",\\\"SitusCityName\\\":\\\"COLUMBIA\\\",\\\"SitusCountryCode2\\\":\\\"US\\\",\\\"SitusCountryCode3\\\":\\\"USA\\\",\\\"SitusCountryName\\\":\\\"UNITED STATES\\\",\\\"SitusMainDivision\\\":\\\"SOUTH CAROLINA\\\",\\\"SitusSubDivision\\\":\\\"RICHLAND\\\",\\\"SitusTaxAreaID\\\":\\\"410790230\\\",\\\"TaxAmount\\\":\\\"0.35\\\",\\\"TaxDate\\\":\\\"3\\/4\\/2022\\\",\\\"TaxRate\\\":\\\"0.06\\\",\\\"TaxResultType\\\":\\\"Taxable\\\",\\\"TaxtobeCollectedFrom\\\":\\\"Buyer\\\",\\\"TaxType\\\":\\\"Seller Use\\\",\\\"TaxableAmount\\\":\\\"5.89\\\",\\\"TaxpayerCompanyCode\\\":\\\"660\\\",\\\"TaxpayerCompanyName\\\":\\\"American Red Cross\\\",\\\"TaxpayerDivisionCode\\\":\\\"ARC\\\",\\\"TransactionID\\\":\\\"410643\\\",\\\"TransactionPerspective\\\":\\\"Seller\\\",\\\"TransactionProcessDate\\\":\\\"3\\/4\\/2022\\\",\\\"TransactionType\\\":\\\"Sale\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="JDESalesTaxGroupByDocumentId" format="json">
+      <types:shape format="weave" example="examples/JDESalesTaxGroupByDoucmentId-1.json"><![CDATA[%dw 2.0
+
+type JDESalesTaxGroupByDocumentId = {|
+  "71537": Array<{|    AdminOriginTaxAreaID: String,     CustomerCode: String,     DestinationTaxAreaID: String,     DocumentNumber: String,     ExtendedPrice: String,     FinancialEventType: String,     GrossAmount: String,     ImpositionName: String,     ImpositionType: String,     JurisdictionID: String,     JurisdictionName: String,     JurisdictionType: String,     LineItemID: String,     LineItemNumber: String,     LineItemTaxDetailID: String,     LineItemTaxID: String,     NegativeTaxIndicator: String,     NonTaxableAmount: String,     PhysicalOriginTaxAreaID: String,     PostingDate: String,     ProductCode: String,     ProductName: String,     Quantity: String,     SitusCityName: String,     SitusCountryCode2: String,     SitusCountryCode3: String,     SitusCountryName: String,     SitusMainDivision: String,     SitusSubDivision: String,     SitusTaxAreaID: String,     TaxAmount: String,     TaxDate: String,     TaxRate: String,     TaxResultType: String,     TaxtobeCollectedFrom: String,     TaxType: String,     TaxableAmount: String,     TaxpayerCompanyCode: String,     TaxpayerCompanyName: String,     TaxpayerDivisionCode: String,     TransactionID: String,     TransactionPerspective: String,     TransactionProcessDate: String,     TransactionType: String  |}>
+|} {"example": "{\\\"71537\\\":[{\\\"AdminOriginTaxAreaID\\\":\\\"250330720\\\",\\\"CustomerCode\\\":\\\"2327277\\\",\\\"DestinationTaxAreaID\\\":\\\"410790230\\\",\\\"DocumentNumber\\\":\\\"71537\\\",\\\"ExtendedPrice\\\":\\\"5.89\\\",\\\"FinancialEventType\\\":\\\"Invoice\\\",\\\"GrossAmount\\\":\\\"5.89\\\",\\\"ImpositionName\\\":\\\"Sales and Use Tax\\\",\\\"ImpositionType\\\":\\\"General Sales and Use Tax\\\",\\\"JurisdictionID\\\":\\\"33809\\\",\\\"JurisdictionName\\\":\\\"SOUTH CAROLINA\\\",\\\"JurisdictionType\\\":\\\"STATE\\\",\\\"LineItemID\\\":\\\"410644\\\",\\\"LineItemNumber\\\":\\\"2000\\\",\\\"LineItemTaxDetailID\\\":\\\"169309\\\",\\\"LineItemTaxID\\\":\\\"410668\\\",\\\"NegativeTaxIndicator\\\":\\\"No\\\",\\\"NonTaxableAmount\\\":\\\"0\\\",\\\"PhysicalOriginTaxAreaID\\\":\\\"250330720\\\",\\\"PostingDate\\\":\\\"3\\/4\\/2022\\\",\\\"ProductCode\\\":\\\"FREIGHT\\\",\\\"ProductName\\\":\\\"\\\",\\\"Quantity\\\":\\\"1\\\",\\\"SitusCityName\\\":\\\"COLUMBIA\\\",\\\"SitusCountryCode2\\\":\\\"US\\\",\\\"SitusCountryCode3\\\":\\\"USA\\\",\\\"SitusCountryName\\\":\\\"UNITED STATES\\\",\\\"SitusMainDivision\\\":\\\"SOUTH CAROLINA\\\",\\\"SitusSubDivision\\\":\\\"RICHLAND\\\",\\\"SitusTaxAreaID\\\":\\\"410790230\\\",\\\"TaxAmount\\\":\\\"0.35\\\",\\\"TaxDate\\\":\\\"3\\/4\\/2022\\\",\\\"TaxRate\\\":\\\"0.06\\\",\\\"TaxResultType\\\":\\\"Taxable\\\",\\\"TaxtobeCollectedFrom\\\":\\\"Buyer\\\",\\\"TaxType\\\":\\\"Seller Use\\\",\\\"TaxableAmount\\\":\\\"5.89\\\",\\\"TaxpayerCompanyCode\\\":\\\"660\\\",\\\"TaxpayerCompanyName\\\":\\\"American Red Cross\\\",\\\"TaxpayerDivisionCode\\\":\\\"ARC\\\",\\\"TransactionID\\\":\\\"410643\\\",\\\"TransactionPerspective\\\":\\\"Seller\\\",\\\"TransactionProcessDate\\\":\\\"3\\/4\\/2022\\\",\\\"TransactionType\\\":\\\"Sale\\\"}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="isValid" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: boolean]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Payload" format="json">
+      <types:shape format="weave" example="examples/JDE_SalesTax_Report-2.json" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Input_Payload = Array<{|  AdminOriginTaxAreaID: String,   CustomerCode: String,   DestinationTaxAreaID: String,   DocumentNumber: String,   ExtendedPrice: String,   FinancialEventType: String,   GrossAmount: String,   ImpositionName: String,   ImpositionType: String,   JurisdictionID: String,   JurisdictionName: String,   JurisdictionType: String,   LineItemID: String,   LineItemNumber: String,   LineItemTaxDetailID: String,   LineItemTaxID: String,   NegativeTaxIndicator: String,   NonTaxableAmount: String,   PhysicalOriginTaxAreaID: String,   PostingDate: String,   ProductCode: String,   ProductName: String,   Quantity: String,   SitusCityName: String,   SitusCountryCode2: String,   SitusCountryCode3: String,   SitusCountryName: String,   SitusMainDivision: String,   SitusSubDivision: String,   SitusTaxAreaID: String,   TaxAmount: String,   TaxDate: String,   TaxRate: String,   TaxResultType: String,   TaxtobeCollectedFrom: String,   TaxType: String,   TaxableAmount: String,   TaxpayerCompanyCode: String,   TaxpayerCompanyName: String,   TaxpayerDivisionCode: String,   TransactionID: String,   TransactionPerspective: String,   TransactionProcessDate: String,   TransactionType: String|}> {"example": "[{\\\"AdminOriginTaxAreaID\\\":\\\"250330720\\\",\\\"CustomerCode\\\":\\\"2327277\\\",\\\"DestinationTaxAreaID\\\":\\\"410790230\\\",\\\"DocumentNumber\\\":\\\"71537\\\",\\\"ExtendedPrice\\\":\\\"5.89\\\",\\\"FinancialEventType\\\":\\\"Invoice\\\",\\\"GrossAmount\\\":\\\"5.89\\\",\\\"ImpositionName\\\":\\\"Sales and Use Tax\\\",\\\"ImpositionType\\\":\\\"General Sales and Use Tax\\\",\\\"JurisdictionID\\\":\\\"33809\\\",\\\"JurisdictionName\\\":\\\"SOUTH CAROLINA\\\",\\\"JurisdictionType\\\":\\\"STATE\\\",\\\"LineItemID\\\":\\\"410644\\\",\\\"LineItemNumber\\\":\\\"2000\\\",\\\"LineItemTaxDetailID\\\":\\\"169309\\\",\\\"LineItemTaxID\\\":\\\"410668\\\",\\\"NegativeTaxIndicator\\\":\\\"No\\\",\\\"NonTaxableAmount\\\":\\\"0\\\",\\\"PhysicalOriginTaxAreaID\\\":\\\"250330720\\\",\\\"PostingDate\\\":\\\"3\\/4\\/2022\\\",\\\"ProductCode\\\":\\\"FREIGHT\\\",\\\"ProductName\\\":\\\"\\\",\\\"Quantity\\\":\\\"1\\\",\\\"SitusCityName\\\":\\\"COLUMBIA\\\",\\\"SitusCountryCode2\\\":\\\"US\\\",\\\"SitusCountryCode3\\\":\\\"USA\\\",\\\"SitusCountryName\\\":\\\"UNITED STATES\\\",\\\"SitusMainDivision\\\":\\\"SOUTH CAROLINA\\\",\\\"SitusSubDivision\\\":\\\"RICHLAND\\\",\\\"SitusTaxAreaID\\\":\\\"410790230\\\",\\\"TaxAmount\\\":\\\"0.35\\\",\\\"TaxDate\\\":\\\"3\\/4\\/2022\\\",\\\"TaxRate\\\":\\\"0.06\\\",\\\"TaxResultType\\\":\\\"Taxable\\\",\\\"TaxtobeCollectedFrom\\\":\\\"Buyer\\\",\\\"TaxType\\\":\\\"Seller Use\\\",\\\"TaxableAmount\\\":\\\"5.89\\\",\\\"TaxpayerCompanyCode\\\":\\\"660\\\",\\\"TaxpayerCompanyName\\\":\\\"American Red Cross\\\",\\\"TaxpayerDivisionCode\\\":\\\"ARC\\\",\\\"TransactionID\\\":\\\"410643\\\",\\\"TransactionPerspective\\\":\\\"Seller\\\",\\\"TransactionProcessDate\\\":\\\"3\\/4\\/2022\\\",\\\"TransactionType\\\":\\\"Sale\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Input-Attributes.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Input_Attributes = {|
+  timestamp*: DateTime {"typeId": "java.time.LocalDateTime"}, 
+  size*: Number, 
+  symbolicLink*?: Boolean {"typeId": "boolean"}, 
+  fileName*: String, 
+  regularSize*?: Boolean {"typeId": "boolean"}, 
+  directory*?: Boolean {"typeId": "boolean"}, 
+  path*: String
+|}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-fileName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-Today" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-lastTransactionDate" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Input-Variables-lastTransactionDate.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Input_Variables_lastTransactionDate = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-TransactionValidationErrors" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Input-Variables-TransactionValidationErrors.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Input_Variables_TransactionValidationErrors = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-fileContent" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Input-Variables-fileContent.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Input_Variables_fileContent = String | Binary | Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-NumberOfOrdersProcessed" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-oAuthAccessTokenData" format="json">
+      <types:shape format="weave" example="examples/JDE_SalesTax_Report-2.json" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Input_Variables_oAuthAccessTokenData = Array<{|  AdminOriginTaxAreaID: String,   CustomerCode: String,   DestinationTaxAreaID: String,   DocumentNumber: String,   ExtendedPrice: String,   FinancialEventType: String,   GrossAmount: String,   ImpositionName: String,   ImpositionType: String,   JurisdictionID: String,   JurisdictionName: String,   JurisdictionType: String,   LineItemID: String,   LineItemNumber: String,   LineItemTaxDetailID: String,   LineItemTaxID: String,   NegativeTaxIndicator: String,   NonTaxableAmount: String,   PhysicalOriginTaxAreaID: String,   PostingDate: String,   ProductCode: String,   ProductName: String,   Quantity: String,   SitusCityName: String,   SitusCountryCode2: String,   SitusCountryCode3: String,   SitusCountryName: String,   SitusMainDivision: String,   SitusSubDivision: String,   SitusTaxAreaID: String,   TaxAmount: String,   TaxDate: String,   TaxRate: String,   TaxResultType: String,   TaxtobeCollectedFrom: String,   TaxType: String,   TaxableAmount: String,   TaxpayerCompanyCode: String,   TaxpayerCompanyName: String,   TaxpayerDivisionCode: String,   TransactionID: String,   TransactionPerspective: String,   TransactionProcessDate: String,   TransactionType: String|}> {"example": "[{\\\"AdminOriginTaxAreaID\\\":\\\"250330720\\\",\\\"CustomerCode\\\":\\\"2327277\\\",\\\"DestinationTaxAreaID\\\":\\\"410790230\\\",\\\"DocumentNumber\\\":\\\"71537\\\",\\\"ExtendedPrice\\\":\\\"5.89\\\",\\\"FinancialEventType\\\":\\\"Invoice\\\",\\\"GrossAmount\\\":\\\"5.89\\\",\\\"ImpositionName\\\":\\\"Sales and Use Tax\\\",\\\"ImpositionType\\\":\\\"General Sales and Use Tax\\\",\\\"JurisdictionID\\\":\\\"33809\\\",\\\"JurisdictionName\\\":\\\"SOUTH CAROLINA\\\",\\\"JurisdictionType\\\":\\\"STATE\\\",\\\"LineItemID\\\":\\\"410644\\\",\\\"LineItemNumber\\\":\\\"2000\\\",\\\"LineItemTaxDetailID\\\":\\\"169309\\\",\\\"LineItemTaxID\\\":\\\"410668\\\",\\\"NegativeTaxIndicator\\\":\\\"No\\\",\\\"NonTaxableAmount\\\":\\\"0\\\",\\\"PhysicalOriginTaxAreaID\\\":\\\"250330720\\\",\\\"PostingDate\\\":\\\"3\\/4\\/2022\\\",\\\"ProductCode\\\":\\\"FREIGHT\\\",\\\"ProductName\\\":\\\"\\\",\\\"Quantity\\\":\\\"1\\\",\\\"SitusCityName\\\":\\\"COLUMBIA\\\",\\\"SitusCountryCode2\\\":\\\"US\\\",\\\"SitusCountryCode3\\\":\\\"USA\\\",\\\"SitusCountryName\\\":\\\"UNITED STATES\\\",\\\"SitusMainDivision\\\":\\\"SOUTH CAROLINA\\\",\\\"SitusSubDivision\\\":\\\"RICHLAND\\\",\\\"SitusTaxAreaID\\\":\\\"410790230\\\",\\\"TaxAmount\\\":\\\"0.35\\\",\\\"TaxDate\\\":\\\"3\\/4\\/2022\\\",\\\"TaxRate\\\":\\\"0.06\\\",\\\"TaxResultType\\\":\\\"Taxable\\\",\\\"TaxtobeCollectedFrom\\\":\\\"Buyer\\\",\\\"TaxType\\\":\\\"Seller Use\\\",\\\"TaxableAmount\\\":\\\"5.89\\\",\\\"TaxpayerCompanyCode\\\":\\\"660\\\",\\\"TaxpayerCompanyName\\\":\\\"American Red Cross\\\",\\\"TaxpayerDivisionCode\\\":\\\"ARC\\\",\\\"TransactionID\\\":\\\"410643\\\",\\\"TransactionPerspective\\\":\\\"Seller\\\",\\\"TransactionProcessDate\\\":\\\"3\\/4\\/2022\\\",\\\"TransactionType\\\":\\\"Sale\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-TaxObjectExportCSV" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Input-Variables-TaxObjectExportCSV.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Input_Variables_TaxObjectExportCSV = Array<{|  Billing_State__c*: String,   Billing_Contact_Name__c*: String,   Phone__c*: String,   Quantity__c*: String,   CreatedById*: String,   Org_Name__c*: String,   CreatedDate*: String,   LastModifiedDate*: String,   Product_SKU__c*: String,   Batch_Id__c*: String,   Tax_Class__c*: String,   Tax_Amount__c*: String,   Billing_City__c*: String,   Billing_Street_2__c*: String,   Id*: String,   Billing_Street__c*: String,   Billing_Postalcode__c*: String,   Batch_Status__c*: String,   Org_Id__c*: String,   LastModifiedById*: String,   Order_Number__c*: String,   IsDeleted*: String,   Amount__c*: String,   vertex_batch_id__c*: String,   SystemModstamp*: String,   LastViewedDate*: String,   Name*: String,   Vertex_Batch_Export_Date__c*: String,   Product_Name__c*: String,   Line_Item_Id__c*: String,   OwnerId*: String,   Transaction_Date__c*: String,   Batch_Message__c*: String,   LastReferencedDate*: String,   GL_Code__c*: String,   AP_Code__c*: String|}>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-Send_Email" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Payload" format="json">
+      <types:shape format="weave" example="examples/JDE_SalesTax_Report-2.json" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Payload = Array<{|  AdminOriginTaxAreaID: String,   CustomerCode: String,   DestinationTaxAreaID: String,   DocumentNumber: String,   ExtendedPrice: String,   FinancialEventType: String,   GrossAmount: String,   ImpositionName: String,   ImpositionType: String,   JurisdictionID: String,   JurisdictionName: String,   JurisdictionType: String,   LineItemID: String,   LineItemNumber: String,   LineItemTaxDetailID: String,   LineItemTaxID: String,   NegativeTaxIndicator: String,   NonTaxableAmount: String,   PhysicalOriginTaxAreaID: String,   PostingDate: String,   ProductCode: String,   ProductName: String,   Quantity: String,   SitusCityName: String,   SitusCountryCode2: String,   SitusCountryCode3: String,   SitusCountryName: String,   SitusMainDivision: String,   SitusSubDivision: String,   SitusTaxAreaID: String,   TaxAmount: String,   TaxDate: String,   TaxRate: String,   TaxResultType: String,   TaxtobeCollectedFrom: String,   TaxType: String,   TaxableAmount: String,   TaxpayerCompanyCode: String,   TaxpayerCompanyName: String,   TaxpayerDivisionCode: String,   TransactionID: String,   TransactionPerspective: String,   TransactionProcessDate: String,   TransactionType: String|}> {"example": "[{\\\"AdminOriginTaxAreaID\\\":\\\"250330720\\\",\\\"CustomerCode\\\":\\\"2327277\\\",\\\"DestinationTaxAreaID\\\":\\\"410790230\\\",\\\"DocumentNumber\\\":\\\"71537\\\",\\\"ExtendedPrice\\\":\\\"5.89\\\",\\\"FinancialEventType\\\":\\\"Invoice\\\",\\\"GrossAmount\\\":\\\"5.89\\\",\\\"ImpositionName\\\":\\\"Sales and Use Tax\\\",\\\"ImpositionType\\\":\\\"General Sales and Use Tax\\\",\\\"JurisdictionID\\\":\\\"33809\\\",\\\"JurisdictionName\\\":\\\"SOUTH CAROLINA\\\",\\\"JurisdictionType\\\":\\\"STATE\\\",\\\"LineItemID\\\":\\\"410644\\\",\\\"LineItemNumber\\\":\\\"2000\\\",\\\"LineItemTaxDetailID\\\":\\\"169309\\\",\\\"LineItemTaxID\\\":\\\"410668\\\",\\\"NegativeTaxIndicator\\\":\\\"No\\\",\\\"NonTaxableAmount\\\":\\\"0\\\",\\\"PhysicalOriginTaxAreaID\\\":\\\"250330720\\\",\\\"PostingDate\\\":\\\"3\\/4\\/2022\\\",\\\"ProductCode\\\":\\\"FREIGHT\\\",\\\"ProductName\\\":\\\"\\\",\\\"Quantity\\\":\\\"1\\\",\\\"SitusCityName\\\":\\\"COLUMBIA\\\",\\\"SitusCountryCode2\\\":\\\"US\\\",\\\"SitusCountryCode3\\\":\\\"USA\\\",\\\"SitusCountryName\\\":\\\"UNITED STATES\\\",\\\"SitusMainDivision\\\":\\\"SOUTH CAROLINA\\\",\\\"SitusSubDivision\\\":\\\"RICHLAND\\\",\\\"SitusTaxAreaID\\\":\\\"410790230\\\",\\\"TaxAmount\\\":\\\"0.35\\\",\\\"TaxDate\\\":\\\"3\\/4\\/2022\\\",\\\"TaxRate\\\":\\\"0.06\\\",\\\"TaxResultType\\\":\\\"Taxable\\\",\\\"TaxtobeCollectedFrom\\\":\\\"Buyer\\\",\\\"TaxType\\\":\\\"Seller Use\\\",\\\"TaxableAmount\\\":\\\"5.89\\\",\\\"TaxpayerCompanyCode\\\":\\\"660\\\",\\\"TaxpayerCompanyName\\\":\\\"American Red Cross\\\",\\\"TaxpayerDivisionCode\\\":\\\"ARC\\\",\\\"TransactionID\\\":\\\"410643\\\",\\\"TransactionPerspective\\\":\\\"Seller\\\",\\\"TransactionProcessDate\\\":\\\"3\\/4\\/2022\\\",\\\"TransactionType\\\":\\\"Sale\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Output-Attributes.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Attributes = {|
+  timestamp*: DateTime {"typeId": "java.time.LocalDateTime"}, 
+  size*: Number, 
+  symbolicLink*?: Boolean {"typeId": "boolean"}, 
+  fileName*: String, 
+  regularSize*?: Boolean {"typeId": "boolean"}, 
+  directory*?: Boolean {"typeId": "boolean"}, 
+  path*: String
+|}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-fileName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-Today" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-OriginalPayload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Output-Variables-OriginalPayload.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Variables_OriginalPayload = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-lastTransactionDate" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Output-Variables-lastTransactionDate.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Variables_lastTransactionDate = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-TransactionValidationErrors" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Output-Variables-TransactionValidationErrors.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Variables_TransactionValidationErrors = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-fileContent" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Output-Variables-fileContent.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Variables_fileContent = String | Binary | Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-NumberOfOrdersProcessed" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: number]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-oAuthAccessTokenData" format="json">
+      <types:shape format="weave" example="examples/JDE_SalesTax_Report-2.json" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Variables_oAuthAccessTokenData = Array<{|  AdminOriginTaxAreaID: String,   CustomerCode: String,   DestinationTaxAreaID: String,   DocumentNumber: String,   ExtendedPrice: String,   FinancialEventType: String,   GrossAmount: String,   ImpositionName: String,   ImpositionType: String,   JurisdictionID: String,   JurisdictionName: String,   JurisdictionType: String,   LineItemID: String,   LineItemNumber: String,   LineItemTaxDetailID: String,   LineItemTaxID: String,   NegativeTaxIndicator: String,   NonTaxableAmount: String,   PhysicalOriginTaxAreaID: String,   PostingDate: String,   ProductCode: String,   ProductName: String,   Quantity: String,   SitusCityName: String,   SitusCountryCode2: String,   SitusCountryCode3: String,   SitusCountryName: String,   SitusMainDivision: String,   SitusSubDivision: String,   SitusTaxAreaID: String,   TaxAmount: String,   TaxDate: String,   TaxRate: String,   TaxResultType: String,   TaxtobeCollectedFrom: String,   TaxType: String,   TaxableAmount: String,   TaxpayerCompanyCode: String,   TaxpayerCompanyName: String,   TaxpayerDivisionCode: String,   TransactionID: String,   TransactionPerspective: String,   TransactionProcessDate: String,   TransactionType: String|}> {"example": "[{\\\"AdminOriginTaxAreaID\\\":\\\"250330720\\\",\\\"CustomerCode\\\":\\\"2327277\\\",\\\"DestinationTaxAreaID\\\":\\\"410790230\\\",\\\"DocumentNumber\\\":\\\"71537\\\",\\\"ExtendedPrice\\\":\\\"5.89\\\",\\\"FinancialEventType\\\":\\\"Invoice\\\",\\\"GrossAmount\\\":\\\"5.89\\\",\\\"ImpositionName\\\":\\\"Sales and Use Tax\\\",\\\"ImpositionType\\\":\\\"General Sales and Use Tax\\\",\\\"JurisdictionID\\\":\\\"33809\\\",\\\"JurisdictionName\\\":\\\"SOUTH CAROLINA\\\",\\\"JurisdictionType\\\":\\\"STATE\\\",\\\"LineItemID\\\":\\\"410644\\\",\\\"LineItemNumber\\\":\\\"2000\\\",\\\"LineItemTaxDetailID\\\":\\\"169309\\\",\\\"LineItemTaxID\\\":\\\"410668\\\",\\\"NegativeTaxIndicator\\\":\\\"No\\\",\\\"NonTaxableAmount\\\":\\\"0\\\",\\\"PhysicalOriginTaxAreaID\\\":\\\"250330720\\\",\\\"PostingDate\\\":\\\"3\\/4\\/2022\\\",\\\"ProductCode\\\":\\\"FREIGHT\\\",\\\"ProductName\\\":\\\"\\\",\\\"Quantity\\\":\\\"1\\\",\\\"SitusCityName\\\":\\\"COLUMBIA\\\",\\\"SitusCountryCode2\\\":\\\"US\\\",\\\"SitusCountryCode3\\\":\\\"USA\\\",\\\"SitusCountryName\\\":\\\"UNITED STATES\\\",\\\"SitusMainDivision\\\":\\\"SOUTH CAROLINA\\\",\\\"SitusSubDivision\\\":\\\"RICHLAND\\\",\\\"SitusTaxAreaID\\\":\\\"410790230\\\",\\\"TaxAmount\\\":\\\"0.35\\\",\\\"TaxDate\\\":\\\"3\\/4\\/2022\\\",\\\"TaxRate\\\":\\\"0.06\\\",\\\"TaxResultType\\\":\\\"Taxable\\\",\\\"TaxtobeCollectedFrom\\\":\\\"Buyer\\\",\\\"TaxType\\\":\\\"Seller Use\\\",\\\"TaxableAmount\\\":\\\"5.89\\\",\\\"TaxpayerCompanyCode\\\":\\\"660\\\",\\\"TaxpayerCompanyName\\\":\\\"American Red Cross\\\",\\\"TaxpayerDivisionCode\\\":\\\"ARC\\\",\\\"TransactionID\\\":\\\"410643\\\",\\\"TransactionPerspective\\\":\\\"Seller\\\",\\\"TransactionProcessDate\\\":\\\"3\\/4\\/2022\\\",\\\"TransactionType\\\":\\\"Sale\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-TaxObjectExportCSV" format="java">
+      <types:shape format="weave" example="weave/autogenerated/d10c890f-379b-42dd-b0b1-60f59b8e5563/Output-Variables-TaxObjectExportCSV.wev" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Variables_TaxObjectExportCSV = Array<{|  Billing_State__c*: String,   Billing_Contact_Name__c*: String,   Phone__c*: String,   Quantity__c*: String,   CreatedById*: String,   Org_Name__c*: String,   CreatedDate*: String,   LastModifiedDate*: String,   Product_SKU__c*: String,   Batch_Id__c*: String,   Tax_Class__c*: String,   Tax_Amount__c*: String,   Billing_City__c*: String,   Billing_Street_2__c*: String,   Id*: String,   Billing_Street__c*: String,   Billing_Postalcode__c*: String,   Batch_Status__c*: String,   Org_Id__c*: String,   LastModifiedById*: String,   Order_Number__c*: String,   IsDeleted*: String,   Amount__c*: String,   vertex_batch_id__c*: String,   SystemModstamp*: String,   LastViewedDate*: String,   Name*: String,   Vertex_Batch_Export_Date__c*: String,   Product_Name__c*: String,   Line_Item_Id__c*: String,   OwnerId*: String,   Transaction_Date__c*: String,   Batch_Message__c*: String,   LastReferencedDate*: String,   GL_Code__c*: String,   AP_Code__c*: String|}>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-Send_Email" format="java">
+      <types:shape format="raml" autogeneratedOrigin="6512ec8d-9c88-4483-814e-269c60447d03"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-sfRequest" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Input-Variables-sfRequest.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Input_Variables_sfRequest = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-pulledRecords" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Input-Variables-pulledRecords.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Input_Variables_pulledRecords = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-notMatched" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Input-Variables-notMatched.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Input_Variables_notMatched = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-flowName" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Input-Variables-flowName.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Input_Variables_flowName = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Payload" format="csv">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Output-Payload.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Output_Payload = Null
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-sfRequest" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Output-Variables-sfRequest.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Output_Variables_sfRequest = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-pulledRecords" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Output-Variables-pulledRecords.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Output_Variables_pulledRecords = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-emailnm" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Output-Variables-emailnm.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Output_Variables_emailnm = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-notMatched" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Output-Variables-notMatched.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Output_Variables_notMatched = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-flowName" format="java">
+      <types:shape format="weave" example="weave/autogenerated/42f95b35-75a0-4430-9287-e38fe6c17638/Output-Variables-flowName.wev" autogeneratedOrigin="99e45d58-e199-46df-a925-8fa14edaa92d"><![CDATA[%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Output_Variables_flowName = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Payload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Input-Payload.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Input_Payload = {|
+  apexProcessingTime?: Number, 
+  apiActiveProcessingTime?: Number, 
+  apiVersion?: String, 
+  columnDelimiter?: String, 
+  concurrencyMode?: String, 
+  contentType?: String, 
+  createdById?: String, 
+  createdDate?: String, 
+  errorMessage?: String, 
+  externalIdFieldName?: String, 
+  id?: String, 
+  jobType?: String, 
+  lineEnding?: String, 
+  numberRecordsFailed?: Number, 
+  numberRecordsProcessed?: Number, 
+  object?: String, 
+  operation?: String, 
+  retries?: Number, 
+  state?: String, 
+  systemModstamp?: String, 
+  totalProcessingTime?: Number
+|} {"typeAlias": "BulkJobState",
+"class": "org.mule.extension.salesforce.api.bulk.BulkJobState",
+"typeId": "org.mule.extension.salesforce.api.bulk.BulkJobState"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Input-Attributes.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Input_Attributes = { _?: String }
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-sfRequest" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Input-Variables-sfRequest.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Input_Variables_sfRequest = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-pulledRecords" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Input-Variables-pulledRecords.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Input_Variables_pulledRecords = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-notMatched" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Input-Variables-notMatched.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Input_Variables_notMatched = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-flowName" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Input-Variables-flowName.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Input_Variables_flowName = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Payload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Output-Payload.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Output_Payload = {|
+  apexProcessingTime?: Number, 
+  apiActiveProcessingTime?: Number, 
+  apiVersion?: String, 
+  columnDelimiter?: String, 
+  concurrencyMode?: String, 
+  contentType?: String, 
+  createdById?: String, 
+  createdDate?: String, 
+  errorMessage?: String, 
+  externalIdFieldName?: String, 
+  id?: String, 
+  jobType?: String, 
+  lineEnding?: String, 
+  numberRecordsFailed?: Number, 
+  numberRecordsProcessed?: Number, 
+  object?: String, 
+  operation?: String, 
+  retries?: Number, 
+  state?: String, 
+  systemModstamp?: String, 
+  totalProcessingTime?: Number
+|} {"typeAlias": "BulkJobState",
+"class": "org.mule.extension.salesforce.api.bulk.BulkJobState",
+"typeId": "org.mule.extension.salesforce.api.bulk.BulkJobState"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Output-Attributes.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Output_Attributes = { _?: String }
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-emails" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Output-Variables-emails.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Output_Variables_emails = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-sfRequest" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Output-Variables-sfRequest.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Output_Variables_sfRequest = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-pulledRecords" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Output-Variables-pulledRecords.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Output_Variables_pulledRecords = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-notMatched" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Output-Variables-notMatched.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Output_Variables_notMatched = Array<Nothing>
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-flowName" format="java">
+      <types:shape format="weave" example="weave/autogenerated/69f0756e-07fd-4474-8515-024c0671e0c6/Output-Variables-flowName.wev" autogeneratedOrigin="53d468a5-00d4-4621-8d90-7d71d5fb6c8e"><![CDATA[%dw 2.0
+
+type auto_69f0756e_07fd_4474_8515_024c0671e0c6_Output_Variables_flowName = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Payload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/942b5148-b193-4c4b-8674-1994461c2a4a/Input-Payload.wev" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[%dw 2.0
+
+type auto_942b5148_b193_4c4b_8674_1994461c2a4a_Input_Payload = {|
+  apexProcessingTime?: Number, 
+  apiActiveProcessingTime?: Number, 
+  apiVersion?: String, 
+  columnDelimiter?: String, 
+  concurrencyMode?: String, 
+  contentType?: String, 
+  createdById?: String, 
+  createdDate?: String, 
+  errorMessage?: String, 
+  externalIdFieldName?: String, 
+  id?: String, 
+  jobType?: String, 
+  lineEnding?: String, 
+  numberRecordsFailed?: Number, 
+  numberRecordsProcessed?: Number, 
+  object?: String, 
+  operation?: String, 
+  retries?: Number, 
+  state?: String, 
+  systemModstamp?: String, 
+  totalProcessingTime?: Number
+|} {"typeAlias": "BulkJobState",
+"class": "org.mule.extension.salesforce.api.bulk.BulkJobState",
+"typeId": "org.mule.extension.salesforce.api.bulk.BulkJobState"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/942b5148-b193-4c4b-8674-1994461c2a4a/Input-Attributes.wev" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[%dw 2.0
+
+type auto_942b5148_b193_4c4b_8674_1994461c2a4a_Input_Attributes = { _?: String }
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Variables-pulledRecords" format="csv">
+      <types:shape format="weave" example="weave/autogenerated/942b5148-b193-4c4b-8674-1994461c2a4a/Input-Variables-pulledRecords.wev" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[%dw 2.0
+
+type auto_942b5148_b193_4c4b_8674_1994461c2a4a_Input_Variables_pulledRecords = Binary
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Variables-flowName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Payload" format="java">
+      <types:shape format="weave" example="weave/autogenerated/942b5148-b193-4c4b-8674-1994461c2a4a/Output-Payload.wev" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[%dw 2.0
+
+type auto_942b5148_b193_4c4b_8674_1994461c2a4a_Output_Payload = {|
+  apexProcessingTime?: Number, 
+  apiActiveProcessingTime?: Number, 
+  apiVersion?: String, 
+  columnDelimiter?: String, 
+  concurrencyMode?: String, 
+  contentType?: String, 
+  createdById?: String, 
+  createdDate?: String, 
+  errorMessage?: String, 
+  externalIdFieldName?: String, 
+  id?: String, 
+  jobType?: String, 
+  lineEnding?: String, 
+  numberRecordsFailed?: Number, 
+  numberRecordsProcessed?: Number, 
+  object?: String, 
+  operation?: String, 
+  retries?: Number, 
+  state?: String, 
+  systemModstamp?: String, 
+  totalProcessingTime?: Number
+|} {"typeAlias": "BulkJobState",
+"class": "org.mule.extension.salesforce.api.bulk.BulkJobState",
+"typeId": "org.mule.extension.salesforce.api.bulk.BulkJobState"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/942b5148-b193-4c4b-8674-1994461c2a4a/Output-Attributes.wev" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[%dw 2.0
+
+type auto_942b5148_b193_4c4b_8674_1994461c2a4a_Output_Attributes = { _?: String }
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Variables-emails" format="java">
+      <types:shape format="weave" example="weave/autogenerated/942b5148-b193-4c4b-8674-1994461c2a4a/Output-Variables-emails.wev" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[%dw 2.0
+
+type auto_942b5148_b193_4c4b_8674_1994461c2a4a_Output_Variables_emails = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Variables-pulledRecords" format="csv">
+      <types:shape format="weave" example="weave/autogenerated/942b5148-b193-4c4b-8674-1994461c2a4a/Output-Variables-pulledRecords.wev" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[%dw 2.0
+
+type auto_942b5148_b193_4c4b_8674_1994461c2a4a_Output_Variables_pulledRecords = Binary
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Variables-flowName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="4a0be5c4-fe89-489f-b154-72e4882f95fb"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Input-Variables-taxexempt_sfquery" format="java">
+      <types:shape format="raml" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Attributes" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c072ef1e-453e-438a-97bd-5c3eeb38af40/Output-Attributes.wev" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[%dw 2.0
+
+type auto_c072ef1e_453e_438a_97bd_5c3eeb38af40_Output_Attributes = Null
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-fileName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-Today" format="java">
+      <types:shape format="raml" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-fullDirectoryPath" format="java">
+      <types:shape format="raml" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-lastModifiedDate" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c072ef1e-453e-438a-97bd-5c3eeb38af40/Output-Variables-lastModifiedDate.wev" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[%dw 2.0
+
+type auto_c072ef1e_453e_438a_97bd_5c3eeb38af40_Output_Variables_lastModifiedDate = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-taxexempt_sfquery" format="java">
+      <types:shape format="raml" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-CreatedDate" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c072ef1e-453e-438a-97bd-5c3eeb38af40/Output-Variables-CreatedDate.wev" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[%dw 2.0
+
+type auto_c072ef1e_453e_438a_97bd_5c3eeb38af40_Output_Variables_CreatedDate = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-Account__C" format="java">
+      <types:shape format="weave" example="weave/autogenerated/c072ef1e-453e-438a-97bd-5c3eeb38af40/C.wev" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[%dw 2.0
+
+type auto_c072ef1e_453e_438a_97bd_5c3eeb38af40_Output_Variables_Account__C = Any
+
+]]></types:shape>
+    </types:type>
+    <types:type name="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-fileContent" format="java">
+      <types:shape format="raml" autogeneratedOrigin="49fd1fdf-39b6-48e7-8151-90934239f7bf"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-fileName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="bb3f5272-0e7b-47a5-b1c2-92e11a463cc7"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-Today" format="java">
+      <types:shape format="raml" autogeneratedOrigin="bb3f5272-0e7b-47a5-b1c2-92e11a463cc7"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-fullDirectoryPath" format="java">
+      <types:shape format="raml" autogeneratedOrigin="bb3f5272-0e7b-47a5-b1c2-92e11a463cc7"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-taxexempt_sfquery" format="java">
+      <types:shape format="raml" autogeneratedOrigin="bb3f5272-0e7b-47a5-b1c2-92e11a463cc7"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-fileContent" format="java">
+      <types:shape format="raml" autogeneratedOrigin="bb3f5272-0e7b-47a5-b1c2-92e11a463cc7"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-fileName" format="java">
+      <types:shape format="raml" autogeneratedOrigin="b12d541b-cb8c-40a6-809b-e7e01135b4e8"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-Today" format="java">
+      <types:shape format="raml" autogeneratedOrigin="b12d541b-cb8c-40a6-809b-e7e01135b4e8"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-fullDirectoryPath" format="java">
+      <types:shape format="raml" autogeneratedOrigin="b12d541b-cb8c-40a6-809b-e7e01135b4e8"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-taxexempt_sfquery" format="java">
+      <types:shape format="raml" autogeneratedOrigin="b12d541b-cb8c-40a6-809b-e7e01135b4e8"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-fileContent" format="java">
+      <types:shape format="raml" autogeneratedOrigin="b12d541b-cb8c-40a6-809b-e7e01135b4e8"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#bd2db090-82f4-4f25-a5ba-01711ef2afc0">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="TaxObjectExportGroupByOrder"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="VertexSupplyRequest"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f9ca828b-8866-4618-bc0a-85edc6ae6782">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="TaxObjectExportResponse"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#141d3dc3-144f-4d37-9fc4-913c92c02d05">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="TaxObjectExportResponse"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="oAuthAccessTokenData" type="JDETaxReport"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="TaxObjectExportGroupByOrder"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="isTaxOnlyAdjustOrders" type="TaxObjectExportGroupByOrder"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#c86998ca-70df-4c33-90df-e420ced90ada">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Payload"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="ExportDate" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-ExportDate"/>
+          <types:variable name="VertexTransactionId" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-VertexTransactionId"/>
+          <types:variable name="NumberOfOrdersProcessed" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-NumberOfOrdersProcessed"/>
+          <types:variable name="OriginalOrderItems" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Input-Variables-OriginalOrderItems"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Payload"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="ExportDate" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-ExportDate"/>
+          <types:variable name="VertexTransactionId" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-VertexTransactionId"/>
+          <types:variable name="NumberOfOrdersProcessed" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-NumberOfOrdersProcessed"/>
+          <types:variable name="OriginalOrderItems" type="auto_c86998ca-70df-4c33-90df-e420ced90ada_Output-Variables-OriginalOrderItems"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#ac3b1d54-4e39-4371-aaa6-47cbe8f31118">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="TaxObjectExportGroupByOrder"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#91f98944-dff2-40a2-8b28-58b6c072a6b6">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Payload"/>
+          <types:attributes type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="ExportDate" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-ExportDate"/>
+          <types:variable name="VertexTransactionId" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-VertexTransactionId"/>
+          <types:variable name="NumberOfOrdersProcessed" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-NumberOfOrdersProcessed"/>
+          <types:variable name="OriginalOrderItems" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Input-Variables-OriginalOrderItems"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Payload"/>
+          <types:attributes type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="ExportDate" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-ExportDate"/>
+          <types:variable name="VertexTransactionId" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-VertexTransactionId"/>
+          <types:variable name="NumberOfOrdersProcessed" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-NumberOfOrdersProcessed"/>
+          <types:variable name="OriginalOrderItems" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-OriginalOrderItems"/>
+          <types:variable name="InboundPayload" type="auto_91f98944-dff2-40a2-8b28-58b6c072a6b6_Output-Variables-InboundPayload"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f539f39b-a52d-4e99-a1a8-c8bb74630222">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="TaxObjectExportGroupByOrder"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#8d4a8575-e9c9-4add-a854-7413e2fc597c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Input-Payload"/>
+          <types:attributes type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Input-Attributes"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Payload"/>
+          <types:attributes type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="fileName" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-fileName"/>
+          <types:variable name="Today" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Today"/>
+          <types:variable name="NumberOfOrdersProcessed" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-NumberOfOrdersProcessed"/>
+          <types:variable name="lastTransactionDate" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-lastTransactionDate"/>
+          <types:variable name="Send_Report" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Send_Report"/>
+          <types:variable name="taxMonthlyReportJson" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-taxMonthlyReportJson"/>
+          <types:variable name="Persist_Date" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Persist_Date"/>
+          <types:variable name="oAuthAccessTokenData" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-oAuthAccessTokenData"/>
+          <types:variable name="TaxObjectExportCSV" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-TaxObjectExportCSV"/>
+          <types:variable name="Send_Email" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-Send_Email"/>
+          <types:variable name="fileContent" type="auto_8d4a8575-e9c9-4add-a854-7413e2fc597c_Output-Variables-fileContent"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#1f18113c-7206-4403-bba2-a8c7ab36b956">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="TaxObjectExportResponse"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#3c8bf2c2-21fc-4a2e-b9e4-1ae61a5611dc">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="TaxObjectExportResponse"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#1505fb9c-e85c-4eea-9655-6d84b0a6840e">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="TaxObjectExportGroupByOrder"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="VertexSupplyRequest"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="OriginalOrderItems" type="TaxObjectExportGroupByOrder"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#eec0bb50-00f4-4786-b730-65736ca062b2">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="JDESalesTaxGroupByDocumentId"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="VertexSupplyRequest"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#d10c890f-379b-42dd-b0b1-60f59b8e5563">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Payload"/>
+          <types:attributes type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="fileName" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-fileName"/>
+          <types:variable name="Today" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-Today"/>
+          <types:variable name="lastTransactionDate" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-lastTransactionDate"/>
+          <types:variable name="NumberOfOrdersProcessed" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-NumberOfOrdersProcessed"/>
+          <types:variable name="TransactionValidationErrors" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-TransactionValidationErrors"/>
+          <types:variable name="fileContent" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-fileContent"/>
+          <types:variable name="oAuthAccessTokenData" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-oAuthAccessTokenData"/>
+          <types:variable name="TaxObjectExportCSV" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-TaxObjectExportCSV"/>
+          <types:variable name="Send_Email" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Input-Variables-Send_Email"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Payload"/>
+          <types:attributes type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="fileName" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-fileName"/>
+          <types:variable name="Today" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-Today"/>
+          <types:variable name="OriginalPayload" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-OriginalPayload"/>
+          <types:variable name="lastTransactionDate" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-lastTransactionDate"/>
+          <types:variable name="NumberOfOrdersProcessed" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-NumberOfOrdersProcessed"/>
+          <types:variable name="TransactionValidationErrors" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-TransactionValidationErrors"/>
+          <types:variable name="fileContent" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-fileContent"/>
+          <types:variable name="oAuthAccessTokenData" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-oAuthAccessTokenData"/>
+          <types:variable name="TaxObjectExportCSV" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-TaxObjectExportCSV"/>
+          <types:variable name="Send_Email" type="auto_d10c890f-379b-42dd-b0b1-60f59b8e5563_Output-Variables-Send_Email"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#95079ddc-b190-4317-8e81-a69e7a4c455b">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="TaxObjectExportResponse"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="TaxObjectExportResponse"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#e8343d63-49d9-4885-909e-06add715dc26">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="JDETaxReport"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#1789d889-d042-4ba5-a499-e4292087e4b8"/>
+  <types:enrichment select="#0e53313b-0de7-4298-b162-e1c76b4dcc55"/>
+  <types:enrichment select="#73864fa9-36fd-4bde-b629-25fb979542ba"/>
+  <types:enrichment select="#5981fbf4-b1c6-49dc-b9aa-d239cda9a667"/>
+  <types:enrichment select="#42f95b35-75a0-4430-9287-e38fe6c17638">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="sfRequest" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-sfRequest"/>
+          <types:variable name="pulledRecords" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-pulledRecords"/>
+          <types:variable name="notMatched" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-notMatched"/>
+          <types:variable name="flowName" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Input-Variables-flowName"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Payload"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="sfRequest" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-sfRequest"/>
+          <types:variable name="pulledRecords" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-pulledRecords"/>
+          <types:variable name="emailnm" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-emailnm"/>
+          <types:variable name="notMatched" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-notMatched"/>
+          <types:variable name="flowName" type="auto_42f95b35-75a0-4430-9287-e38fe6c17638_Output-Variables-flowName"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#69f0756e-07fd-4474-8515-024c0671e0c6">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Payload"/>
+          <types:attributes type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="sfRequest" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-sfRequest"/>
+          <types:variable name="pulledRecords" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-pulledRecords"/>
+          <types:variable name="notMatched" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-notMatched"/>
+          <types:variable name="flowName" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Input-Variables-flowName"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Payload"/>
+          <types:attributes type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="emails" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-emails"/>
+          <types:variable name="sfRequest" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-sfRequest"/>
+          <types:variable name="pulledRecords" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-pulledRecords"/>
+          <types:variable name="notMatched" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-notMatched"/>
+          <types:variable name="flowName" type="auto_69f0756e-07fd-4474-8515-024c0671e0c6_Output-Variables-flowName"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#942b5148-b193-4c4b-8674-1994461c2a4a">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Payload"/>
+          <types:attributes type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="pulledRecords" type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Variables-pulledRecords"/>
+          <types:variable name="flowName" type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Input-Variables-flowName"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Payload"/>
+          <types:attributes type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="emails" type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Variables-emails"/>
+          <types:variable name="pulledRecords" type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Variables-pulledRecords"/>
+          <types:variable name="flowName" type="auto_942b5148-b193-4c4b-8674-1994461c2a4a_Output-Variables-flowName"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#c072ef1e-453e-438a-97bd-5c3eeb38af40">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="taxexempt_sfquery" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Input-Variables-taxexempt_sfquery"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:attributes type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Attributes"/>
+        </types:message>
+        <types:variables>
+          <types:variable name="fileName" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-fileName"/>
+          <types:variable name="Today" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-Today"/>
+          <types:variable name="fullDirectoryPath" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-fullDirectoryPath"/>
+          <types:variable name="lastModifiedDate" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-lastModifiedDate"/>
+          <types:variable name="taxexempt_sfquery" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-taxexempt_sfquery"/>
+          <types:variable name="CreatedDate" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-CreatedDate"/>
+          <types:variable name="Account__C" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-Account__C"/>
+          <types:variable name="fileContent" type="auto_c072ef1e-453e-438a-97bd-5c3eeb38af40_Output-Variables-fileContent"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f4e8da88-7149-40ac-a5e7-4e7188200102">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="fileName" type="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-fileName"/>
+          <types:variable name="Today" type="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-Today"/>
+          <types:variable name="fullDirectoryPath" type="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-fullDirectoryPath"/>
+          <types:variable name="taxexempt_sfquery" type="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-taxexempt_sfquery"/>
+          <types:variable name="fileContent" type="auto_f4e8da88-7149-40ac-a5e7-4e7188200102_Output-Variables-fileContent"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#febc9117-cfcf-423d-81b8-a8faecb5cb32">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="fileName" type="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-fileName"/>
+          <types:variable name="Today" type="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-Today"/>
+          <types:variable name="fullDirectoryPath" type="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-fullDirectoryPath"/>
+          <types:variable name="taxexempt_sfquery" type="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-taxexempt_sfquery"/>
+          <types:variable name="fileContent" type="auto_febc9117-cfcf-423d-81b8-a8faecb5cb32_Output-Variables-fileContent"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

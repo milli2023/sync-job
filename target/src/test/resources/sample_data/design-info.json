@@ -1,0 +1,16 @@
+{
+  "sampleData": {
+    "46d189e2-9112-4501-8f47-3c400938d20f": {
+      "payload": "sample_data/*.dwl"
+    },
+    "bbf96ecb-b13d-4d04-ad4f-e8827b8175f8": {
+      "payload": "sample_data/*_1.dwl"
+    },
+    "762810e5-98be-4d2b-aa62-27c06f8c3510": {
+      "payload": "sample_data/list_json.json"
+    },
+    "eec0bb50-00f4-4786-b730-65736ca062b2": {
+      "vars-oAuthAccessTokenData": "sample_data/json.json"
+    }
+  }
+}

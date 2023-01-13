@@ -1,0 +1,28 @@
+{
+  "minMuleVersion": "4.3.0",
+  "rcoLmsCatalogLastExecutedDateSeed" : "${workflow.rco.last.executed.date}",
+  "rcoLmsCatalogScheduleInterval" : "${workflow.rco.scheduler.interval}",
+  "pNumberLastExecutedDateSeed" :"${workflow.account.last.executed.date}",
+  "pNumberScheduleInterval" : "${workflow.account.scheduler.interval}",
+  "sfdcAcctToOracleLastExecutedDateSeed" : "${workflow.oracle.last.executed.date}",
+  "sfdcAcctToOracleScheduleInterval" : "${workflow.oracle.scheduler.interval}",
+  "creInstructorLastExecutedDateSeed" : "${workflow.salesforce.last.executed.date}",
+  "creInstructorScheduleInterval" : "${workflow.salesforce.scheduler.interval}",
+  "workflow.salestax.last.executed.date" : "${workflow.salestax.last.executed.date}",
+  "workflow.salestax.scheduler.intervall" : "${workflow.salestax.scheduler.interval}",
+  "send.email" : "${send.email}",
+  "send.vertex.monthlyreport": "${send.vertex.monthlyreport}",
+  "persist.last.transaction.date": "${persist.last.transaction.date}",
+  "secureProperties": [
+    "anypoint.platform.client_secret",
+  	"anypoint.platform.client_id",
+    "MULE_SECURE_PROPERTIES_KEY",
+    "secure::salesforce.consumerkey",
+    "secure::salesforce.consumersecret",
+    "secure::salesforce.password",
+    "secure::salesforce.securitytoken",
+    "secure::keystore.keypassword",
+    "secure::keystore.password"  
+      
+  ]  
+}

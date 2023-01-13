@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_42f95b35_75a0_4430_9287_e38fe6c17638_Output_Variables_pulledRecords = Any
+

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+	<flow name="sfdc-csf-to-csf-sftp-flow" doc:id="cc991cef-13fc-488d-80d9-7f6588178936" >
+		<os:retrieve doc:name="Retrieve" doc:id="0e8b1869-6ed0-4ae9-bb6b-8913e4bd8bda" key="CreatedDate" objectStore="CFS_SFTP_Object_store">
+			<os:default-value ><![CDATA[${workflow.cfs-sftp.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Retrieve  Last Execution Date" doc:id="5f63b3ce-fefc-42e7-a52f-cd26694f3038" message="Retrieve Last Execution Date #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="8a3472cb-a8f9-497a-a5b4-f4378976cc96" variableName="createdDate"/>
+		<try doc:name="Try" doc:id="2cd0713b-13aa-4678-ab32-f3034a4e97bd" >
+			<salesforce:query doc:name="Integration File " doc:id="67976579-423c-4efe-b661-4708bd60bd8a" config-ref="Salesforce_Config">
+			<reconnect />
+			<salesforce:salesforce-query><![CDATA[SELECT Id, File_Name__c, Sequence_Number__c, Record_Data__c, CreatedDate FROM Integration_Files__c where Target_System__c = 'CFS' and  CreatedDate > :createdDate order by File_Name__c, Sequence_Number__c]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"createdDate" : vars.createdDate
+}]]]></salesforce:parameters>
+		</salesforce:query>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="81543b9d-86f1-4f51-9059-7a055e0c05e8" >
+				<email:send doc:name="Send CFS Email Escalation" doc:id="4aa839f4-28d0-4e6c-aedb-24c8a1d406e1" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MuleSoft  ${MULE_ENV} - SFDC to CFS Account Invoice File Process Error with Integrations file lookup" toAddresses="#[Mule::p('workflow.cfs-sftp.email.error.distribution') splitBy ',']">
+					<email:body contentType="text/plain" />
+				</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Query Results" doc:id="1fc8f1c1-e2ed-4dd9-8342-79a96aeaab6b" message="Query Results #[payload]"/>
+		<ee:transform doc:name="Payload to JSON" doc:id="1caa0735-c4cd-4720-84aa-fea1e89daeb3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+
+---
+payload groupBy (value, index) -> value.File_Name__c]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Array of File Content" doc:id="2c567b78-e202-42bf-b08e-28e88a765510" message="Array of File Content #[payload]"/>
+		<choice doc:name="Choice" doc:id="0e1efe90-44ec-4e2d-88b3-c6b378aa94ea" >
+			<when expression="#[sizeOf(payload) != 0]">
+				<try doc:name="Try" doc:id="60cf697f-5b4d-4e06-9a48-189ae75cffd8">
+					<foreach doc:name="For Each" doc:id="439ae1a0-b75c-4170-bf7b-45c07f48445e" collection="#[payload]">
+						<logger level="INFO" doc:name="Logger" doc:id="a2310971-c786-4141-984e-f6bfd22bdb30" message="foreach Payload #[payload]"/>
+						<set-variable value="#[payload]" doc:name="Keep Original Payload" doc:id="3b8f22db-cb1c-43f9-9a0d-93251ef90b94" variableName="originalPayload"/>
+						<set-variable value="#[payload[0].CreatedDate[0]]" doc:name="Record CreatedDate" doc:id="73535003-ccfc-480d-9552-eaad210c014d" variableName="CreatedDate" />
+						<set-variable value="#[payload[0].File_Name__c[0]]" doc:name="FileName" doc:id="c9389d87-8c73-42e4-9adf-c2e2dbb4fcb5" variableName="fileName" />
+						<set-variable value="#[p('cfs.arcinvc.sftp.outDirectory')]" doc:name="Full Outbound Directory and Filename" doc:id="7aa17e83-ac48-4126-b374-8d2747f2768e" variableName="fullOutboundPath"/>
+						<logger level="INFO" doc:name="Output Directory" doc:id="46f3aa6e-f43e-4ed5-9cb1-55defa927508" message="Output Directory #[vars.fullOutboundPath]"/>
+						<ee:transform doc:name="FileContent" doc:id="61d95b49-bf98-449f-8657-e5dd59d6be27">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+
+---
+{
+	fileContent: vars.originalPayload[0].Record_Data__c joinBy ("\r\n") as  String
+}
+  ]]></ee:set-payload>
+						</ee:message>
+							<ee:variables >
+							</ee:variables>
+					</ee:transform>
+						<set-payload value="#[payload.fileContent]" doc:name="Set Payload" doc:id="882aaf7d-668a-4d6e-b765-00fb9c9a1645" />
+						<logger level="INFO" doc:name="CSV Content to Write " doc:id="de507117-756d-4739-947e-069138c7dc7e" message="CSV Content for [#[vars.fileName]]to Write #[payload]"/>
+						<file:write doc:id="2a9ffc7f-63bf-4452-9092-7a0e1287b56d" doc:name="SFDC - CFS Account Invoice File" config-ref="CFS_File_Config" path="#[vars.fileName]">
+						</file:write>
+						
+						<!-- <sftp:write doc:id="5d7f41ea-c9e5-44ca-a8c6-e2de033f272f" doc:name="Write CFS  file to SFTP server" config-ref="CFS_SFTP_Config" path="#[vars.fullOutboundPath ++ vars.fileName]">
+							<reconnect />
+						</sftp:write> -->
+						<email:send doc:name="Send Email with CFS File Attached" doc:id="3e7c345e-fae8-48a8-80b4-d1b80fb3ec4e" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MuleSoft  ${MULE_ENV} - SFDC to CFS Account Invoice File Process Successful" toAddresses="#[Mule::p('workflow.cfs-sftp.email.report.distribution') splitBy ',']">
+							<email:body contentType="text/plain">
+								<email:content><![CDATA[Team,
+
+Attached Please find the latest CFS Account Invoice File.
+
+Thanks PHSS Business Integration Services]]></email:content>
+							</email:body>
+							<email:attachments><![CDATA[#[{'$(vars.fileName)': payload }]]]></email:attachments>
+						</email:send>
+						<sftp:write doc:name="CFS ARCINVC File" doc:id="a58fe1c3-3e05-41e1-8757-0a6c3ce2798d" config-ref="CFS_ARCINVC_SFTP_Config" path="#[vars.fullOutboundPath ++ vars.fileName]">
+							<reconnect />
+						</sftp:write>
+						
+
+		</foreach>
+					<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="db77687b-c9e9-4aa9-ae25-5676b817aa83">
+					<email:send doc:name="Send CFS Email Escalation" doc:id="2f86c805-ee46-45f8-a261-d8bda7c26c27" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MuleSoft  ${MULE_ENV} - SFDC to CFS Account Invoice File Process Error" toAddresses="#[Mule::p('workflow.cfs-sftp.email.error.distribution') splitBy ',']">
+						<email:body contentType="text/html" >
+								</email:body>
+					</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+			</when>
+			<otherwise >
+				<email:send doc:name="CFS No Integration Records Found" doc:id="51fe6c42-1cc5-4113-8bba-ccacbc11799d" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MuleSoft ${MULE_ENV} - SFDC to CFS Account Invoice File Process No Records Found" toAddresses="#[Mule::p('workflow.cfs-sftp.email.norecords.distribution') splitBy ',']">
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[<p>
+
+<h3> No records found </h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message" doc:id="1a03bc99-184e-4c42-84ea-a60d12f5f463" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+---
+{
+  now: now(),
+  epochTime : now() as Number,
+  nanoseconds: now().nanoseconds,
+  milliseconds: now().milliseconds,
+  seconds: now().seconds,
+  minutes: now().minutes,
+  hour: now().hour,
+  day: now().day,
+  month: now().month,
+  year: now().year,
+  quarter: now().quarter,
+  dayOfWeek: now().dayOfWeek,
+  dayOfYear: now().dayOfYear,
+  offsetSeconds: now().offsetSeconds,
+  formattedDate: now() as String {format: "y-MM-dd"},
+  formattedTime: now() as String {format: "hh:m:s"}
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="CreatedDate" ><![CDATA[%dw 2.0
+output text/plain
+---
+now() as String]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Storing Last Executed Date" doc:id="f30b0d1a-ffff-43b5-85f6-628184e3bfd6" message="Storing Last Executed Date of #[vars.CreatedDate]" />
+		 
+		<os:store doc:name="Store" doc:id="122c10b1-1a6f-41b1-a204-383a2e5ccc11" objectStore="CFS_SFTP_Object_store" key="CreatedDate">
+			<os:value><![CDATA[#[vars.CreatedDate]]]></os:value>
+		</os:store>
+		
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="bcee5326-88a0-4409-87b4-31a69fb5ff9c" >
+				<email:send doc:name="Send CFS Email Escalation" doc:id="b706ec1c-39e3-49fe-b1de-8e40ce40c248" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MuleSoft  ${MULE_ENV} - SFDC to CFS Account Invoice File Process Error" toAddresses="#[Mule::p('workflow.cfs-sftp.email.error.distribution') splitBy ',']">
+					<email:body contentType="text/plain" />
+				</email:send>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

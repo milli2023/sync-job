@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+
+	<flow name="salesforce-salestax-to-vertex-api-flow" doc:id="8d4a8575-e9c9-4add-a854-7413e2fc597c">
+		<os:retrieve doc:name="Retrieve" doc:id="01a7f69c-a9ee-4c6e-bf37-0df70c7725f9" key="TransactionDate" objectStore="Vextex_SalesTax_Object_store">
+			<os:default-value ><![CDATA[${workflow.vertex-salestax.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Retrieve Last Transaction Date" doc:id="85e214a3-a7c3-470e-a92b-ac4367dcedda" message="Retrieve Last Transaction Date #[payload]"/>
+		<set-variable value="#[[]]" doc:name="Transaction Errors" doc:id="a39f620a-5a57-4c41-b794-f065c9793002" variableName="TransactionErrors"/>
+		<set-variable value='#[now() as String {format:"yyyyMMddHHa"}]' doc:name="today" doc:id="4c27b121-f7af-4e08-a392-4cbd40dd0867" variableName="Today" />
+		<set-variable value="#[payload]" doc:name="Last Transaction Date" doc:id="e55ad1d5-ca5a-4145-a123-57e8a10c464f" variableName="lastTransactionDate"/>
+		<logger level="INFO" doc:name="Today" doc:id="b0c462bc-bcd9-4355-9fea-b508e9a03636" message="Today is #[vars.Today]"/>
+		<set-variable value='#["ARC_Vertex_Monthly_SalesTax_" ++ vars.Today ++ ".csv"]' doc:name="fileName" doc:id="1a926cb3-751a-48f4-9714-dce0ac8858d8" variableName="fileName" />
+		<set-variable doc:name="fileContent" doc:id="81b7b6a7-e4ca-42df-b3b0-62b60d1e93fe" variableName="fileContent" value="#[[]]"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="c61c752e-4f27-4681-abab-fc5a6cb47079" >
+			<route >
+				<salesforce:query doc:name="Taxman Data Where isTaxOnlyAdjustmentIndicator__c = false" doc:id="6dbcfc7b-5c8b-437f-99db-fa9b0f5f12fc" config-ref="Salesforce_Config">
+			<reconnect />
+			<salesforce:salesforce-query><![CDATA[SELECT Amount__c,AP_Code__c,Batch_Id__c,Batch_Message__c,Batch_Status__c,Billing_City__c,Billing_Contact_Name__c,Billing_Postalcode__c,Billing_State__c,Billing_Street_2__c,Billing_Street__c,CreatedById,CreatedDate,GL_Code__c,Id,IsDeleted,isTaxOnlyAdjustmentIndicator__c,LastModifiedById,LastModifiedDate,LastReferencedDate,LastViewedDate,Line_Item_Id__c,Name,Order_Number__c,Org_Id__c,Org_Name__c,OwnerId,Phone__c,Product_Name__c,Product_SKU__c,Quantity__c,SystemModstamp,Tax_Amount__c,Tax_Class__c,Tax_Status__c,Transaction_Date__c,Vertex_Batch_Export_Date__c,vertex_batch_id__c FROM Tax_Order_Export__c Where Transaction_Date__c > :lastTransactionDate And Vertex_Batch_Export_Date__c = null And Billing_Postalcode__c <> null And isTaxOnlyAdjustmentIndicator__c = false]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	lastTransactionDate : vars.lastTransactionDate
+}]]]></salesforce:parameters>
+		</salesforce:query>
+			</route>
+			<route >
+				<salesforce:query doc:name="Taxman Data Where isTaxOnlyAdjustmentIndicator__c = true" doc:id="aa1d0140-6a4e-46d1-ad9f-c2c952e2b1b9" config-ref="Salesforce_Config">
+			<reconnect />
+			<salesforce:salesforce-query><![CDATA[SELECT Amount__c,AP_Code__c,Batch_Id__c,Batch_Message__c,Batch_Status__c,Billing_City__c,Billing_Contact_Name__c,Billing_Postalcode__c,Billing_State__c,Billing_Street_2__c,Billing_Street__c,CreatedById,CreatedDate,GL_Code__c,Id,IsDeleted,isTaxOnlyAdjustmentIndicator__c,LastModifiedById,LastModifiedDate,LastReferencedDate,LastViewedDate,Line_Item_Id__c,Name,Order_Number__c,Org_Id__c,Org_Name__c,OwnerId,Phone__c,Product_Name__c,Product_SKU__c,Quantity__c,SystemModstamp,Tax_Amount__c,Tax_Class__c,Tax_Status__c,Transaction_Date__c,Vertex_Batch_Export_Date__c,vertex_batch_id__c FROM Tax_Order_Export__c Where Transaction_Date__c > :lastTransactionDate And Vertex_Batch_Export_Date__c = null And Billing_Postalcode__c <> null And isTaxOnlyAdjustmentIndicator__c = true ]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	lastTransactionDate : vars.lastTransactionDate
+}]]]></salesforce:parameters>
+		</salesforce:query>
+			</route>
+		</scatter-gather>
+		<logger level="INFO" doc:name="Query Results" doc:id="1f18113c-7206-4403-bba2-a8c7ab36b956" message="Query Results #[payload]"/>
+		<set-variable value='#[payload."0".payload]' doc:name="NotTaxOnlyAdjustmentData" doc:id="63cba455-5372-4e08-bbea-ec5c9160efe8" variableName="NotTaxOnlyAdjustmentData"/>
+		<set-variable value='#[payload."1".payload]' doc:name="IsTaxOnlyAdjustmentData" doc:id="cb44d2ee-78f8-4205-8655-65aecb7a0219" variableName="IsTaxOnlyAdjustmentData"/>
+		<ee:transform doc:name="Payload to JSON" doc:id="95079ddc-b190-4317-8e81-a69e7a4c455b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+---
+flatten(payload..payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Array of File Content" doc:id="3c8bf2c2-21fc-4a2e-b9e4-1ae61a5611dc" message="Array of File Content #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Tax Monthly Report Json" doc:id="9328e831-916d-4f24-a3dc-7b5eb99777aa" variableName="taxMonthlyReportJson"/>
+		<choice doc:name="Choice" doc:id="4686968e-1736-4d29-a410-e732495ccb36" >
+			<when expression="#[sizeOf(payload) != 0]">
+				<try doc:name="Try" doc:id="a8261ee8-40ef-4b68-9853-0ca4280deb7e">
+					<set-variable value="#[payload.Transaction_Date__c]" doc:name="Record TransactionDate" doc:id="f8952d59-86b2-47ae-9adf-4116026ac1aa" variableName="lastTransactionDate" />
+					<logger level="INFO" doc:name="Tax Record" doc:id="e8343d63-49d9-4885-909e-06add715dc26" message="Tax Record #[payload]" />
+					<ee:transform doc:name="Transform Message" doc:id="762810e5-98be-4d2b-aa62-27c06f8c3510" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="TaxObjectExportCSV" ><![CDATA[%dw 2.0
+output application/csv
+---
+payload orderBy (lineitem) -> lineitem.Order_Number__c]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<set-variable value="#[vars.fileContent ++ vars.TaxObjectExportCSV]" doc:name="fileContent" doc:id="e562478a-620c-4e87-a5b9-a3fde311cd79" variableName="fileContent" />
+					<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="818e172f-6c60-4199-bd2d-64eee7686d31">
+					<email:send doc:name="Send Vertex Email Escalation" doc:id="81a816c8-4e7a-47f0-9613-9f496c4a3048" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - Vertex Synchronization Process Error" toAddresses="#[Mule::p('workflow.vertex-salestax.email.error.distribution') splitBy ',']">
+						<email:body contentType="text/html" >
+								</email:body>
+					</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+				<ee:transform doc:name="file CSV" doc:id="1789d889-d042-4ba5-a499-e4292087e4b8">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="fileContent" ><![CDATA[%dw 2.0
+output text/plain
+
+---
+write(vars.fileContent, "application/csv")
+ ]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<logger level="INFO" doc:name="fileContent" doc:id="7a1eef73-085b-473a-8b3c-2bf48583c999" message="#[vars.fileContent]" />
+					<set-variable value="${workflow.vertex-salestax.send.email}" doc:name="Send Email" doc:id="c8c62dbb-c8fc-43ff-8a7e-5c8dfabe5ebf" variableName="Send_Email" />
+				<choice doc:name="Choice" doc:id="83344a7f-8d4b-4e1a-b0de-3c6bbab880ff" >
+					<when expression='#[(vars.Send_Email default "") == "true"]'>
+						<email:send doc:name="Send Email with Vertex File Attached" doc:id="0dd86738-07c7-431e-b813-e9b41a6d8908" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - Vertex Monthly Tax Order Export Report" toAddresses="#[Mule::p('workflow.vertex-salestax.email.report.distribution') splitBy ',']">
+							<email:body contentType="text/plain">
+								<email:content><![CDATA[Team,
+
+Attached Please find the Vertex Monthly Tax Order Export Report.
+
+Thanks  PHSS Business Integrations Services]]></email:content>
+							</email:body>
+							<email:attachments><![CDATA[#[{'$(vars.fileName)': vars.fileContent }]]]></email:attachments>
+						</email:send>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="74fb86cc-a356-4cce-bd46-12198b7d9ba7" message="Email Not Send Please check configuration send.email: #[vars.Send_Email]"/>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<email:send doc:name="Vertex No Integration Records Found" doc:id="c18a0643-a229-4211-b137-cfc700d8d947" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MS ${MULE_ENV} - Vertex Synchronization Process No Records to Process" toAddresses="#[Mule::p('workflow.vertex-salestax.email.norecords.distribution') splitBy ',']">
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[<p>
+
+<h3> No records found </h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Build Vertex Payload" doc:id="8c8e899a-df7e-4a5f-a97c-37fcd3879c1d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="lastTransactionDate" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.lastTransactionDate[sizeOf(vars.lastTransactionDate) -1]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value="${workflow.vertex-salestax.send.vertex.monthlyreport}" doc:name="Send  Vertex Monthly Report" doc:id="794de8dc-7590-43fb-99f3-f2651aeddc05" variableName="Send_Report"/>
+		<choice doc:name="Choice" doc:id="8a178880-d4b4-482b-9c2c-d42939603ac2" >
+			<when expression='#[(vars.Send_Report default false) == "true"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="fa43a111-be7e-44c6-9edd-bc9f5ca024e8" message="Initialize Vertex Monthly Report"/>
+				<flow-ref doc:name="get-vertex-accesstoken-subflow" doc:id="872f6977-398f-43a5-85c4-07d02b8c6246" name="get-vertex-accesstoken-subflow" target="oAuthAccessTokenData" />
+				<set-payload value="#[vars.taxMonthlyReportJson]" doc:name="Set Payload" doc:id="f9ca828b-8866-4618-bc0a-85edc6ae6782" />
+				<ee:transform doc:name="Transform Message" doc:id="141d3dc3-144f-4d37-9fc4-913c92c02d05">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+vars.NotTaxOnlyAdjustmentData groupBy $.Order_Number__c]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="isTaxOnlyAdjustOrders" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.IsTaxOnlyAdjustmentData groupBy $.Order_Number__c]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<set-payload value="#[payload ++ vars.isTaxOnlyAdjustOrders]" doc:name="Set Payload" doc:id="4ad5a4aa-4c1b-4916-b9a8-0c1e30373dd1" />
+				<logger level="INFO" doc:name="Logger" doc:id="0d794c51-c0df-43f9-aba1-efb88f36467f" message="Combined Grouped payload #[payload]"/>
+				<set-variable value="#[0]" doc:name="Initialize Order Count" doc:id="3a41c774-f28b-46cb-bf74-c0989cdf9200" variableName="NumberOfOrdersProcessed"/>
+				<parallel-foreach doc:name="Parallel For Each" doc:id="7c043b34-cd63-438c-87e5-af454675263c" >
+					<logger level="INFO" doc:name="Logger" doc:id="2c6176dc-8254-4ddd-9787-b00741325080" message="Payload Parallel For Each #[payload]"/>
+					<try doc:name="Try" doc:id="51e7d00a-f272-4201-b238-18b8c011faf8" >
+					<set-variable value="#[now() as Date {format: 'yyyy-MM-dd'}]" doc:name="ExportDate" doc:id="083f650a-9a90-4ac4-9044-368f8ef23195" variableName="ExportDate" />					
+			 		<ee:transform doc:name="Transform Message" doc:id="1505fb9c-e85c-4eea-9655-6d84b0a6840e">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+			output application/json skipNullOn="everywhere"
+			fun orderNumber(payload) = payload[0].Order_Number__c default null
+			fun organizationId(payload) = payload[0].Org_Id__c default null
+			fun vertexTransId(payload) = payload[0].vertex_batch_id__c default uuid()
+			fun orgName(payload) = payload[0].Org_Name__c default null
+			fun transactionDate(payload) = (payload[0].Transaction_Date__c splitBy("T"))[0]  default null
+			fun city(payload) = payload[0].Billing_City__c default null
+			fun state(payload) = payload[0].Billing_State__c default null
+			fun postalCode(payload) = payload[0].Billing_Postalcode__c default null
+			fun streetAddress(payload) = payload[0].Billing_Street__c default null 
+			fun streetAddress2(payload) = payload[0].Billing_Street_2__c default null 
+			fun taxOnlyAdjustment(payload) = payload[0].isTaxOnlyAdjustmentIndicator__c default false
+			---
+			{
+				customer: {
+					customerCode: {
+						classCode: "Distributors",
+						isBusinessIndicator: true,
+						value: organizationId(payload[0])
+					},
+					isTaxExempt: false
+				},
+				deliveryTerm: "EXW",
+				documentDate: transactionDate(payload[0]),
+				documentNumber: orderNumber(payload[0]),
+				isTaxOnlyAdjustmentIndicator: taxOnlyAdjustment(payload[0]),
+				lineItems: (payload[0] map ( value , key ) -> {
+					extendedPrice: value.Amount__c,
+					lineItemNumber: key +1,
+					inputTotalTax: value.Tax_Amount__c as Number,
+					lineItemId: value.Line_Item_Id__c default "",
+					customer: {
+						destination: {
+							city: value.Billing_City__c,
+							country: "US",
+							mainDivision: value.Billing_State__c,
+							postalCode: value.Billing_Postalcode__c,
+							streetAddress1: value.Billing_Street__c,
+							streetAddress2: value.Billing_Street_2__c
+						}
+					},
+					(nonTaxableOverrides: [
+						{
+							amount : value.Amount__c as Number default 0
+						}
+					]) if (value.Tax_Status__c == 'Nontaxable'),
+					(exemptOverrides: [
+						{
+							amount : value.Amount__c as Number default 0
+						}
+					]) if (value.Tax_Status__c == 'No Tax'),
+					product: {
+						productClass: value.Tax_Class__c default null,
+						value: value.Tax_Class__c default null
+					},
+					quantity: {
+						"unitOfMeasure": "ea",
+						value: value.Quantity__c as Number
+					},
+					unitPrice: value.Amount__c / value.Quantity__c
+				}),
+				postingDate: vars.ExportDate,
+				returnAssistedParametersIndicator: true,
+				returnGeneratedLineItemsIndicator: true,
+				returnTimeElapsedDetailsIndicator: true,
+				roundAtLineLevel: true,
+				saleMessageType: "DISTRIBUTE_TAX",
+				seller: {
+					administrativeOrigin: {
+						city: "Washington",
+						country: "US",
+						mainDivision: "DC",
+						postalCode: "20006",
+						streetAddress1: "431 18th Street NW"
+					},
+					company: "ANRC",
+					division: "HQ",
+					physicalOrigin: {
+						city: "Washington",
+						country: "US",
+						mainDivision: "DC",
+						postalCode: "20006",
+						streetAddress1: "431 18th Street NW",
+					}
+				},
+				transactionId: vertexTransId(payload[0]),
+				transactionType: "SALE"
+			}]]></ee:set-payload>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="OriginalOrderItems"><![CDATA[%dw 2.0
+			output application/json
+			---
+			payload]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<set-variable value="#[payload]" doc:name="Vertex Request Payload" doc:id="0f3cfebd-e738-46e2-8731-bacf1f41ebe8" variableName="VertexRequestPayload"/>
+						<set-variable value="RCLC" doc:name="Parent Flow to RCLC" doc:id="1e3f25b6-dfa4-4fbf-a9f0-9dbd32631281" variableName="ParentFlow"/>
+						<set-variable value="#[payload.documentNumber]" doc:name="Vertex Document Number" doc:id="af929390-1f4d-4d64-a1c8-41db974b3135" variableName="VertexDocumentNumber"/>
+						<set-variable value="#[payload.transactionId]" doc:name="Vertex Transaction Id" doc:id="5d2c582d-6d19-402b-bb28-460b7e9b63c2" variableName="VertexTransactionId" />
+					    <flow-ref doc:name="Persist Transaction ID" doc:id="c77364c3-6df3-470c-8ead-19be09a75641" name="persist-transactionid-sfdc-tax-order-export"/>
+					
+			 			<flow-ref doc:name="Submit Vertex Data Flow" doc:id="1e1a700b-b608-4611-a580-195b3fb6ad65" name="submit-vertex-data-flow" />
+						<choice doc:name="Choice" doc:id="8674236f-0dcc-450e-9df0-6fd12d8e8418" >
+							<when expression="#[vars.isError == true]">
+								<ee:transform doc:name="Transform Message" doc:id="c3978eac-a852-44fd-81b2-9e594d676f62">
+									<ee:message>
+										<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+
+var body="Team,\n\nAttached Please find the Vertex Monthly Tax  Orders Post Transaction Error JSON payload.\n
+\nStacktrace:\n\n"
+var footer="\n\nThanks PHSS Business Integration Services\n"
+---
+body ++ (vars.ErrorMessage as String default "")++ footer
+]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<email:send doc:name="Send Vertex Transaction Error" doc:id="c648c384-9ff4-4b90-9745-cf4af9553080" config-ref="AWS_Email_SMTP" toAddresses="#[Mule::p('workflow.vertex-salestax.email.error.distribution') splitBy ',']" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - Vertex Monthly Tax Order Export  Post Transaction Error Report">
+									<email:body contentType="text/plain" >
+									</email:body>
+									<email:attachments ><![CDATA[#[{'DocumentNumber-$(vars.VertexDocumentNumber).json': vars.VertexRequestPayload }]]]></email:attachments>
+								</email:send>
+							</when>
+							<otherwise >
+								<logger level="INFO" doc:name="Logger" doc:id="102eb606-71b0-4251-8465-2d8086e1c32b" message="Another Order completed successfullly Document Number #[vars.VertexDocumentNumber]"/>
+								<flow-ref doc:name="Persist Export Date" doc:id="3f0263c7-cba3-44ee-a327-df8d97aa9e9c" name="persist-exported-date-sfdc-tax-order-export" />
+							</otherwise>
+						</choice>
+			 			
+						<error-handler >
+							<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d1556610-30b6-4921-be79-3259f979a699" type="HTTP:SECURITY, HTTP:UNAUTHORIZED">
+								<logger level="INFO" doc:name="Logger" doc:id="da857875-8af8-4d2e-b3d6-9ea0256a0b84" message="#[vars.loggingIdentifier] Submission of Vertex Data failed. Retrying with new token" />
+								<flow-ref doc:name="generate-new-token-subflow" doc:id="83fcced7-1739-458a-aec7-9c447926ba06" name="generate-new-token-subflow" target="oAuthAccessTokenData"/>
+								<flow-ref doc:name="Resubmit Vertex Data with new token" doc:id="f15a8cee-5592-4331-8fc4-db59f0df7e83" name="submit-vertex-data-flow"/>
+							</on-error-continue>
+						</error-handler>
+					</try>
+				</parallel-foreach>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="1ac055da-c266-403c-9607-994190fa7910" message="Vertex Monthly Report Not Send Please check configuration send.vertex.monthlyreport: #[vars.Send_Report]"/>
+			</otherwise>
+		</choice>
+		<set-variable value="${workflow.vertex-salestax.persist.last.transaction.date}" doc:name="Persist Last Transaction Date" doc:id="69863e62-dc24-4c9a-b18d-410559b560d1" variableName="Persist_Date"/>
+		<choice doc:name="Choice" doc:id="07fda8f9-c73a-4336-8913-cdbd1ea668b3" >
+			<when expression='#[(vars.Persist_Date default false) == "true"]'>
+				<logger level="INFO" doc:name="Storing Last Transaction Date" doc:id="7fdfa326-c0ba-48d7-ae3c-d612658b2a71" message="Storing Last Executed Date of #[vars.lastTransactionDate]" />
+				<os:store doc:name="Store" doc:id="79cc9dbe-b193-4e1d-b417-6d335db7f4d9" objectStore="Vextex_SalesTax_Object_store" key="TransactionDate">
+			<os:value><![CDATA[#[vars.lastTransactionDate]]]></os:value>
+		</os:store>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="29b78702-c510-42bd-b304-d0952d28eb0a" message=" Vertex Persisting Last Transaction Date  Not persisted, Please check configuration persist.last.transaction.date: #[vars.Persist_Date]"/>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

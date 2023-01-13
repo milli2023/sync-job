@@ -1,0 +1,31 @@
+[
+{
+	"Id": "",
+	"OwnerId": "",
+	"Name": "",
+	"ParentId": "",
+	"This_is_HQ__c": "",
+	"Status__c": "",
+	"ccrz__E_AccountGroup__c": "",
+	"Phone": "",
+	"Extension__c": "",
+	"PHSS_Channel__c": "", 
+	"SABA_Org_Type__c": "", 
+	"Credit_Limit__c ": "", 	  
+	"Payment_Status__c": "",  
+	"Payment_Terms__c": "",  
+	"Tax_Exempt__c": "",  
+	"Tax_ID_Number__c": "",  
+	"Invoice_Delivery_Type__c": "",  
+	"Invoice_delivery_Email__c": "",  
+	"Invoice_Template__c": "",  
+	"Customer_PO_Required_on_Invoice__c": "",  
+	"Restrict_Order_Confirmation_Email__c": "",  
+	"Invoice_Delivery_Frequency__c": "",  
+	"Separate_Invoice_For_Products__c": "",  
+	"Consolidate_Period_Fulfillments__c": "",  
+	"Include_Roster__c": "", 
+	"CFS_Account_Number_1__c" : "",
+	"nk_billto_org_id__c" : "" 
+}
+]

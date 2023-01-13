@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sharepoint="http://www.mulesoft.org/schema/mule/sharepoint" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/sharepoint http://www.mulesoft.org/schema/mule/sharepoint/current/mule-sharepoint.xsd">
+
+	<flow name="salesforce-cfs-to-cfs-sftp-flow" doc:id="7aa255d9-de3f-4f38-8ffc-050ad01cda82" >
+		<scheduler doc:name="Scheduler" doc:id="9c94be5c-7c0f-48f5-bfd6-8cae17e8ed9e" >
+			<scheduling-strategy >
+				<!-- <fixed-frequency frequency="2" timeUnit="MINUTES"/> -->
+				<cron expression="${workflow.cfs-sftp.scheduler.interval}" timeZone="${workflow.cfs-sftp.timezone}" /> 
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="c92b5f0c-73ab-4884-9219-c8bdaabbcc70" message="Initiating CSF To  CFS SFTP Synchronization"/>
+		<flow-ref doc:name="SFDC CFS To CFS SFTP" doc:id="e92f9734-9e00-424f-b912-87d64a5e1de6" name="sfdc-csf-to-csf-sftp-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="4d94d9df-2c8e-45ee-aab8-ad03b582661d" message="Ending CSF To CSF SFTP Synchronization Process"/>
+	</flow>
+	<flow name="salesforce-csf-to-oracle-flow" doc:id="e4958130-2ad0-4d38-8899-ccf7cebbfd31" >
+		<scheduler doc:name="Scheduler" doc:id="5fcacbbf-bad8-40cc-a837-4947bb88a96f" >
+			<scheduling-strategy >
+			    <!-- <fixed-frequency frequency="2" timeUnit="MINUTES"/> -->
+				<cron expression="${workflow.cfs-oracle.scheduler.interval}" timeZone="${workflow.cfs-oracle.timezone}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="635f108d-0cc7-4221-872d-6ff000228ca4" message="Initiating CSF To Oracle Synchronization"/>
+		<flow-ref doc:name="SFDC CSF To CSF Oracle" doc:id="c6cdf122-dcb5-4d5c-bf21-3c5ed4a51f34" name="sfdc-csf-to-oracle-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ddd749c8-7b20-43aa-8d02-c6f4d75814c9" message="Ending CSF To Oracle Synchronization Process"/>
+
+	</flow>
+	<flow name="salesforce-account-to-oracle-flow" doc:id="48a3adbe-2c28-4983-81a3-3a02bf540e3b" >
+		<scheduler doc:name="Scheduler" doc:id="3c8b8cc4-f616-494f-b36c-d1d3b12e57ea" >
+			<scheduling-strategy >
+			    <!-- <fixed-frequency frequency="2" timeUnit="MINUTES"/> -->
+				<cron expression="${workflow.account.scheduler.interval}" timeZone="${workflow.account.timezone}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="2f33111d-147e-42aa-826d-a96dee9b39a5" message="Initiating Account To Oracle Synchronization" />
+		<flow-ref doc:name="SFDC Account To Oracle" doc:id="84c7036f-6b46-443c-b5bc-45769ada30a3" name="sfdc-account-to-oracle-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="31403f64-f524-43a5-9e88-bfdcdd14d08e" message="Ending Account To Oracle Synchronization Process"/>
+	</flow>
+	<flow name="oracle-to-salesforce-account-flow" doc:id="357a93ed-b48f-4c10-a9df-0df5f872e23d" >
+		<scheduler doc:name="Scheduler" doc:id="5bb2fb62-2324-4ada-9b59-d27284eea99c" >
+			<scheduling-strategy >
+			    <!-- <fixed-frequency frequency="2" timeUnit="MINUTES"/> -->
+				<cron expression="${workflow.oracle.scheduler.interval}" timeZone="${workflow.oracle.timezone}" />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="4f37c8f4-9f05-4dc7-bccf-5a02e81129fa" message="Initiating Oracle to Account Synchronization"/>
+		<flow-ref doc:name="Oracle to SFDC Account" doc:id="edee1a09-c94f-4266-8012-d8818228e5a0" name="oracle-to-sfdc-account-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b02fbf89-b660-4d7a-b690-f532668567e6" message="Ending Oracle To Account Synchronization Process"/>
+	</flow>
+	<flow name="salesforce-ilt-class-cre-api-instructor-create-flow" doc:id="1acc9946-a6fb-4aa1-8792-43ec85c8c7b0" >
+		<scheduler doc:name="Scheduler" doc:id="5999690b-4272-4e1a-9b4e-7321c7cbec13" >
+			<scheduling-strategy > 
+			    <!--   <fixed-frequency frequency="2" timeUnit="MINUTES" /> -->
+				 <cron expression="${workflow.salesforce.scheduler.interval}" timeZone="${workflow.salesforce.timezone}" /> 
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="d7d4f19d-6b3e-475e-89fe-cfd68ff17ef3" message="Initiating SFDC CRE API Create ILT Class Instructors" />
+		<flow-ref doc:name="SFDC CRE API Create ILT Class Instructors" doc:id="44c30682-7a3b-4627-af1d-36b85da665b8" name="salesforce-ilt-class-api-instructor-create-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="3c735331-f609-4365-8cc4-e74ba7e56c5b" message="Ending SFDC CRE API Create ILT Class Instructors Process"/>
+	</flow>
+	<flow name="salesforce-rco-to-rco-sftp" doc:id="47f03fde-431c-4652-94d3-bb0af39cd311" >
+		<scheduler doc:name="Scheduler" doc:id="cd4e0f3c-db73-48a0-8679-cf5f9dba659b" >
+		  <scheduling-strategy >
+			    <!--	<fixed-frequency frequency="2" timeUnit="MINUTES" />  -->
+				     <cron expression="${workflow.rco-sftp.scheduler.interval}" timeZone="${workflow.rco-sftp.timezone}" />  
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="b1c3aaac-145d-4340-97c3-9d30f0fa40eb" message="Initiating SFDC RCO To RCO SFTP Process" />
+		<flow-ref doc:name="SFDC RCO To RCO SFTP" doc:id="3b18eb16-26a3-4d9e-8e43-0da9786674f3" name="sfdc-rco-to-rco-sftp-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7503bfc4-e992-415d-aa71-e7925e554be0" message="Ending SFDC RCO To RCO SFTP Process"/>
+	</flow>
+	<flow name="salesforce-salestax-to-rco-sftp" doc:id="de913eed-d5fb-419b-ae2a-eff7324406ec" >
+		<scheduler doc:name="Scheduler" doc:id="ebfd954d-f420-4359-93a5-b4ccaa242449" >
+			<scheduling-strategy >
+			    <!-- <fixed-frequency frequency="2" timeUnit="MINUTES"/> -->
+				<cron expression="${workflow.salestax.scheduler.interval}" timeZone="${workflow.salestax.timezone}" /> 
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="8cba9b67-1d34-46fd-88e1-6ae50a86f552" message="Initiating SFDC Sales Tax To RCO SFTP Process" />
+		<flow-ref doc:name="SFDC Sales Tax To RCO SFTP" doc:id="b12d541b-cb8c-40a6-809b-e7e01135b4e8" name="salesforce-salestax-to-rco-sftp_delta"/>
+		<logger level="INFO" doc:name="Logger" doc:id="515790ba-8579-481b-b848-1a6ff28b89bc" message="Ending SFDC Sales Tax To RCO SFTP Process"/>
+	</flow>
+	<flow name="salesforce-salestax-to-vertex-api" doc:id="28478c55-29a2-48cc-9d7e-e088ce1e1f9e" >
+		<scheduler doc:name="Scheduler" doc:id="6eafa6d4-496d-40bc-836d-8ace39389547" >
+			<scheduling-strategy >
+				<!--   <fixed-frequency frequency="2" timeUnit="MINUTES" />     -->
+				
+				<cron expression="${workflow.vertex-salestax.scheduler.interval}" timeZone="${workflow.vertex-salestax.timezone}" />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="05dffca3-1001-48fe-b142-d54cb93ee5f0" message="Initiating SFDC Sales Tax To Vertex Api  Process"/>
+		<flow-ref doc:name="SFDC Sales Tax To Vertex Api" doc:id="c2907d87-2b9f-4839-b30a-d88ad7a814b4" name="salesforce-salestax-to-vertex-api-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="af835f7b-c329-474e-999b-9453dd240790" message="Ending SFDC Sales Tax To Vertex Api  Process"/>
+	</flow>
+	<flow name="jde-salestax-to-vertex-api" doc:id="94a46ec1-dbf6-4247-8024-6028d2a77f3c" >
+		<sftp:listener doc:name="JDE Sales Tax File" doc:id="516b3a03-d928-4bce-83ad-621fd26f5b49" config-ref="JDE_SFTP_Config" moveToDirectory="../archive/">
+			<reconnect />
+			<scheduling-strategy > 
+				   <!-- <fixed-frequency frequency="2" timeUnit="MINUTES"/>     -->
+				<cron expression="${workflow.jde-vertex-salestax.scheduler.interval}" timeZone="${workflow.jde-vertex-salestax.timezone}" /> 
+			</scheduling-strategy>
+			<sftp:matcher directories="EXCLUDE" symLinks="EXCLUDE"/>
+		</sftp:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="11bc90df-e0b1-4ce0-90b6-3a93bfc9014e" message="Initiating JDE Sales Tax To Vertex Api  Process"/>
+		<ee:transform doc:name="Transform Message" doc:id="5e736031-b47c-4e88-8c7e-01fb95f7e8ef" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="SFTP_Filename" ><![CDATA[attributes.fileName]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="JDE Salestax To Vertex Api" doc:id="7c46840a-20a3-4ca5-bfb3-c7de495ec4c3" name="jde-salestax-to-vertex-api-flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="034c88c0-9289-4a87-9d1b-ad43643d0252" message="Ending JDE Sales Tax To Vertex Api  Process"/>
+	</flow>
+	<flow name="tsord-tsaraging-mainflow" doc:id="52382dab-7d7e-4d92-9f43-3ea67b4911d2" >
+		<scheduler doc:name="Scheduler" doc:id="74f119ca-605d-4854-b2df-36d22de74c13" >
+			<scheduling-strategy >
+				<cron expression="${workflow.salesforce-ar-aging.scheduler.ts.interval}" timeZone="${workflow.salesforce-ar-aging.scheduler.ts.timezone}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="start tsord flow" doc:id="5b4a41df-5d8d-43bc-aaa4-9ce466a9f30e" message="start tsord flow #[payload]" />
+		<flow-ref doc:name="sftp-sfdc-TSORD-flow" doc:id="343587dd-04e9-4156-bbb0-c8424be1d5ed" name="sftp-sfdc-TSORD-flow" />
+		<logger level="INFO" doc:name="end of tsord and start tsaraging flow" doc:id="a0f93fb7-c558-4261-abdd-faec76ccf106" message="end of tsord and start tsaraging flow  #[sizeOf(payload)]" />
+		<flow-ref doc:name="sftp-sfdc-TSARAging-flow" doc:id="caf963ec-ccaa-480a-ac4a-f4bcd96109db" name="sftp-sfdc-TSARAging-flow" />
+		<logger level="INFO" doc:name="end of tsaraging flow" doc:id="7a5802c1-d0f9-41b1-9d0b-93b81d7ebb73" message="end of tsaraging flow #[sizeOf(payload)]" />
+	</flow>
+	<flow name="ecomaraging-mainflow" doc:id="b4918781-ce27-43d4-b62f-11e5c4f1bc5e" >
+<scheduler doc:name="Scheduler" doc:id="dc30d242-023c-42a1-a1a2-794f1f3a7b38" >
+			<scheduling-strategy >
+				<cron expression="${workflow.salesforce-ar-aging.scheduler.ecom.interval}" timeZone="${workflow.salesforce-ar-aging.scheduler.ecom.timezone}"/>
+			</scheduling-strategy>
+		</scheduler>
+<!-- 	<sftp:listener doc:name="On New or Updated File" doc:id="0bf41bee-7032-42c0-af7b-d5ef2fad8eb5" config-ref="ECOM-SFTP_Config" watermarkEnabled="true">
+			<scheduling-strategy>
+			<!&#45;&#45; 
+				<fixed-frequency frequency="${workflow.salesforce-ar-aging.scheduler.ecom.frequency}" timeUnit="HOURS" />
+			 &#45;&#45;>
+			 <cron expression="${workflow.salesforce-ar-aging.scheduler.ecom.interval}" timeZone="${workflow.salesforce-ar-aging.scheduler.ecom.timezone}"/>
+			 
+</scheduling-strategy>
+			<sftp:matcher filenamePattern="ECOMARAging*" directories="EXCLUDE"/>
+		
+</sftp:listener>  -->
+
+		<logger level="INFO" doc:name="start ecom flow " doc:id="deee1f08-aa02-47d9-b19a-149b9882b952" message="start ecom flow #[sizeOf(payload)]" />
+		<flow-ref doc:name="sftp-sfdc-ECOMARAging-flow" doc:id="aff14148-9312-4672-a009-02d3926bbce2" name="sftp-sfdc-ecomaraging-flow"/>
+		<logger level="INFO" doc:name="end of ecom flow" doc:id="f819247a-5c66-4c3e-bf0e-7483fd0e1f4c" message="end of ecom flow #[sizeOf(payload)]"/>
+	</flow>
+	<flow name="salesforce-salestax-to-rco-sftp-noLastModified" doc:id="891762b0-4153-4408-a067-6abe7e8aab10" >
+		<scheduler doc:name="Copy_of_Scheduler" doc:id="9911c4e5-59bb-4732-97da-388198b78a19" >
+			<scheduling-strategy >
+				<cron expression="${workflow.salestax.scheduler.interval}" timeZone="${workflow.salestax.timezone}" />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Logger" doc:id="8dc69bc2-8392-4b31-ab65-634e017ebbc6" message="Initiating SFDC Sales Tax To RCO SFTP Process with no last modified date" />
+		<flow-ref doc:name="SFDC Sales Tax To RCO SFTP full" doc:id="bb3f5272-0e7b-47a5-b1c2-92e11a463cc7" name="salesforce-salestax-to-rco-sftp_full" />
+		<logger level="INFO" doc:name="Logger" doc:id="0dbb3f51-89a5-45c5-806d-1b6f15319a67" message="Ending SFDC Sales Tax To RCO SFTP Process with no Last Modified date" />
+	</flow>
+	
+	
+</mule>

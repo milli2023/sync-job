@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+	<flow name="sfdc-salestax-to-rco-sftp-flow" doc:id="c072ef1e-453e-438a-97bd-5c3eeb38af40" >
+		<os:retrieve doc:name="Retrieve" doc:id="76c3795d-d9b3-451a-9604-f3582465be7a" key="CreatedDate" objectStore="RCO_SalesTax_Object_store">
+			<os:default-value ><![CDATA[${workflow.salestax.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Retrieve Last Execution Date" doc:id="7b428309-446f-4f0c-b3a6-c03695c018cc" message="Retrieve Last Execution Date #[payload]"/>
+		<set-variable value='#[now() as String {format:"yyyyMMddHHa"}]' doc:name="today" doc:id="ae503c50-6a71-4e2a-b2e7-267fb2d34407" variableName="Today" />
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="419f9755-6159-4cb0-9a44-0fdd24628d39" variableName="lastModifiedDate"/>
+		<set-variable value='#["ARC_Tax_Exemption_" ++ vars.Today ++ ".xml"]' doc:name="fileName" doc:id="4a5af4f2-e5e0-43d1-83c8-e402915d5a56" variableName="fileName" />
+		<set-variable doc:name="fileContent" doc:id="ce961171-0609-4fe5-b020-de8ab59575ed" variableName="fileContent" value="#['']"/>
+		<set-variable value="#[vars.lastModifiedDate]" doc:name="Default CreatedDate" doc:id="d955dc50-aea6-4133-b02a-03d47c0cab95" variableName="CreatedDate"/>
+		<flow-ref doc:name="Get Account_C" doc:id="e656996e-bf15-4c94-832f-06e0c3bd8524" name="getAccount" target="Account__C"/>
+		<logger level="INFO" doc:name="Tax-exempt Accounts" doc:id="8ec32a36-417a-4bf2-865d-2b5485826963" message="Tax-exempt Accounts #[payload]"/>
+		<salesforce:query doc:name="Integration File" doc:id="4a77b65e-6c8d-4d66-a05f-a0bd3ec95e53" config-ref="Salesforce_Config">
+			<reconnect />
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, Account_Name__c,Account__c, Account__r.Salesforce_Auto_Number__c, State__c, Status__c, CreatedDate, LastModifiedDate, Active__c FROM Sales_Tax_Exemption__c Where Account__r.Salesforce_Auto_Number__c <> null And Status__c = 'Approved' And Account__c in (:Account__C) Order by State__c]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"Account__C" : vars.Account__C
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="INFO" doc:name="Query Results" doc:id="337a3d86-1b62-418c-9351-dbae3ef576a6" message="Query Results #[payload]"/>
+		<ee:transform doc:name="Payload to JSON" doc:id="ab26c382-aea6-42f5-bb4e-59eb59ee5309" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+fun groupPayload(ThePayload) = ThePayload groupBy(item, index) -> item.Account__r.Salesforce_Auto_Number__c
+output application/json
+---
+groupPayload(payload) pluck $]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Array of File Content" doc:id="f10119a9-2e58-45c2-a0b6-4cc9cc943548" message="Array of File Content #[payload]"/>
+		<choice doc:name="Choice" doc:id="010a7a54-2f37-488b-9b3d-9009ec01257a" >
+			<when expression="#[sizeOf(payload) != 0]">
+				<try doc:name="Try" doc:id="ac83fcc9-470f-461e-b94f-76f11a2849eb">
+					<foreach doc:name="For Each" doc:id="71b50eb5-4ff7-4685-8a73-f47faf125b06" collection="#[payload]">
+						<set-variable value="#[payload[sizeOf(payload)-1].CreatedDate]" doc:name="Record CreatedDate" doc:id="aaa46fa3-3680-4b85-8016-25980bd508bd" variableName="CreatedDate" />
+						<ee:transform doc:name="Resolve State Name" doc:id="48a2501c-e9c5-4145-ae7a-ed997fadffb9" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+
+fun getStateName(stateCode) = (stateCode as String match {
+    case 'AA' ->  'Armed Forces (the) Americas'
+    case 'AE' ->  'Armed Forces Europe'
+	case 'AL' ->  'Alabama'
+	case 'AK' ->  'Alaska'
+	case 'AP' ->  'Armed Forces Pacific'
+	case 'AR' ->  'Arkansas'
+	case 'AS' ->  'American Samoa'
+	case 'AZ' ->  'Arizona'
+	case 'CA' ->  'California'
+	case 'CO' ->  'Colorado'
+	case 'CT' ->  'Connecticut'
+	case 'DE' ->  'Delaware'
+	case 'DC' ->  'District Of Columbia'
+	case 'FM' ->  'Federated States Of Micronesia'
+	case 'FL' ->  'Florida'
+	case 'GA' ->  'Georgia'
+	case 'GU' ->  'Guam'
+	case 'HI' ->  'Hawaii'
+	case 'ID' ->  'Idaho'
+	case 'IL' ->  'Illinois'
+	case 'IN' ->  'Indiana'
+	case 'IA' ->  'Iowa'
+	case 'KS' ->  'Kansas'
+	case 'KY' ->  'Kentucky'
+	case 'LA' ->  'Louisiana'
+	case 'ME' ->  'Maine'
+	case 'MH' ->  'Marshall Islands'
+	case 'MD' ->  'Maryland'
+	case 'MA' ->  'Massachusetts'
+	case 'MI' ->  'Michigan'
+	case 'MN' ->  'Minnesota'
+	case 'MS' ->  'Mississippi'
+	case 'MO' ->  'Missouri'
+	case 'MT' ->  'Montana'
+	case 'NE' ->  'Nebraska'
+	case 'NV' ->  'Nevada'
+	case 'NH' ->  'New Hampshire'
+	case 'NJ' ->  'New Jersey'
+	case 'NM' ->  'New Mexico'
+	case 'NY' ->  'New York'
+	case 'NC' ->  'North Carolina'
+	case 'ND' ->  'North Dakota'
+	case 'MP' ->  'Northern Mariana Islands'
+	case 'OH' ->  'Ohio'
+	case 'OK' ->  'Oklahoma'
+	case 'OR' ->  'Oregon'
+	case 'PW' ->  'Palau'
+	case 'PA' ->  'Pennsylvania'
+	case 'PR' ->  'Puerto Rico'
+	case 'RI' ->  'Rhode Island'
+	case 'SC' ->  'South Carolina'
+	case 'SD' ->  'South Dakota'
+	case 'TN' ->  'Tennessee'
+	case 'TX' ->  'Texas'
+	case 'UT' ->  'Utah'
+	case 'VT' ->  'Vermont'
+	case 'VI' ->  'Virgin Islands'
+	case 'VA' ->  'Virginia'
+	case 'WA' ->  'Washington'
+	case 'WV' ->  'West Virginia'
+	case 'WI' ->  'Wisconsin'
+	case 'WY' ->  'Wyoming'
+})
+
+
+
+var States = (payload.*State__c map (value, index) -> {
+	(getStateName(value)) : value as String
+})
+
+output application/json
+---
+{
+	Salesforce_Auto_Number__c: payload[0].Account__r.Salesforce_Auto_Number__c default "",
+	State__c: flatten(States)  default [],
+	
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="Log Transformed Payload" doc:id="a1adb0e6-4d2b-43b2-b2cd-976e90c8470e" message="#[payload]"/>
+						<ee:transform doc:name="Build XML" doc:id="8bf910bd-b896-4f03-9b0e-926564c589d6" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+ 
+output application/java
+
+fun reduceMe(response) = response reduce ($$ ++ $)
+---
+
+'	<custom-object type-id="taxExemptionClients" object-id="' ++ payload.Salesforce_Auto_Number__c ++ '">
+		<fileName>' ++ vars.fileName  ++ '</fileName>
+		<stateList>' ++ (write(reduceMe(payload.State__c),'application/json') as String) ++ '</stateList>
+	</custom-object>'
+
+]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="Log XML Payload" doc:id="32a2de11-9ae0-401f-a59f-fcaeb202b0cd" message="#[payload]" />
+						<set-variable value="#[vars.fileContent ++ payload]" doc:name="fileContent" doc:id="bed4d26f-65b5-4546-a7c7-49876fc1c1c0" variableName="fileContent"/>
+		</foreach>
+					<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="61c10f6a-f7d3-4873-9fa7-75b0ea82789a">
+					<email:send doc:name="Send RCO Email Escalation" doc:id="542a863a-f7cc-458a-8a39-3c29a7bf01f8" config-ref="AWS_Email_SMTP" fromAddress='arc_phss@redcross.org' subject="mulesoft  ${MULE_ENV} - RCO Synchronization Process Error" toAddresses="#[Mule::p('workflow.salestax.email.error.distribution') splitBy ',']">
+						<email:body contentType="text/html" >
+								</email:body>
+					</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+				<set-variable value="#['&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\n&lt;custom-objects xmlns=&quot;http://www.demandware.com/xml/impex/customobject/2006-10-31&quot;&gt;\n' ++ vars.fileContent ++ '&lt;/custom-objects&gt;']" doc:name="fileContent Header and Footer" doc:id="612896c1-1e4d-4d0b-aad9-4237a04ef92c" variableName="fileContent"/>
+				<logger level="INFO" doc:name="fileContent" doc:id="2b7ca81f-4dfe-4151-a2c1-22322b88b7fb" message="#[vars.fileContent]" />
+				<file:write doc:name="fileContent" doc:id="2853c30b-8fc8-40f6-a66d-3d8a034822c6" config-ref="File_Config" path="#[vars.fileName]">
+					<file:content ><![CDATA[#[vars.fileContent]]]></file:content>
+				</file:write>
+										
+				<set-variable value='#["/outgoing/uat/ARCExemptionList/" ++ vars.fileName]' doc:name="full Directory Path" doc:id="326f9625-8765-43cd-a6f9-be39a0427781" variableName="fullDirectoryPath" />
+				<sftp:write doc:id="4130a2cf-8cb4-4138-9376-34f4afabbd58" doc:name="Write RCO files to SFTP server" config-ref="SFTP_Config" path="#[vars.fullDirectoryPath]">
+					<reconnect />
+					<sftp:content ><![CDATA[#[vars.fileContent]]]></sftp:content>
+				</sftp:write>
+			</when>
+			<otherwise >
+				<email:send doc:name="RCO No Integration Records Found" doc:id="285ecf68-d24a-4dd4-ac22-d843f10203f9" config-ref="AWS_Email_SMTP" fromAddress='arc_phss@redcross.org' subject="MS ${MULE_ENV} - RCO Synchronization Process No Records to Process" toAddresses="#[Mule::p('workflow.salestax.email.norecords.distribution') splitBy ',']">
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[<p>
+
+<h3> No records found </h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Storing Last Executed Date" doc:id="0c18bcf4-5711-4ea4-ad44-d356cd09669e" message="Storing Last Executed Date of #[vars.createdDate]" />
+		<os:store doc:name="Store" doc:id="7d42a1b7-5788-42d7-b184-bdb89164c1be" objectStore="RCO_SalesTax_Object_store" key="CreatedDate">
+			<os:value><![CDATA[#[vars.CreatedDate]]]></os:value>
+		</os:store>
+	</flow>
+	<sub-flow name="getAccount" doc:id="c09dc316-2661-4112-a476-b0429fe53bdf" >
+		<salesforce:query doc:name="Retrive Accounts" doc:id="80c3bf93-479a-4474-83a4-48b2cb64946a" config-ref="Salesforce_Config" >
+			<reconnect />
+			<salesforce:salesforce-query ><![CDATA[:sfquery]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"sfquery" : vars.taxexempt_sfquery
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="INFO" doc:name="Query Account" doc:id="850bbac0-d5b5-48f5-bd97-f988b72ed174" message="QueryAccount__C #[payload]"/>
+		<ee:transform doc:name="List of Accounts" doc:id="2152a472-2a7f-4dd7-80c5-35c15383e1e6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+
+---
+
+"'" ++ ((payload.Account__c distinctBy $) joinBy ("','")) ++ "'"
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="salesforce-salestax-to-rco-sftp_full" doc:id="f4e8da88-7149-40ac-a5e7-4e7188200102" >
+		<set-variable value="#[&quot;SELECT Account__c FROM Sales_Tax_Exemption__c Where Account__c &lt;&gt; null And Account__r.Salesforce_Auto_Number__c &lt;&gt; null And Status__c = 'Approved'&quot;]" doc:name="Set Variable" doc:id="b8d76aed-7b9b-445d-bfb1-ba17cbd69545" variableName="taxexempt_sfquery"/>
+		<flow-ref doc:name="Flow Reference" doc:id="49fd1fdf-39b6-48e7-8151-90934239f7bf" name="sfdc-salestax-to-rco-sftp-flow"/>
+		
+	</sub-flow>
+	<sub-flow name="salesforce-salestax-to-rco-sftp_delta" doc:id="febc9117-cfcf-423d-81b8-a8faecb5cb32" >
+		<os:retrieve doc:name="Retrieve" doc:id="6b6e235e-7636-4f19-a30b-6d98a08eeb69" key="CreatedDate" objectStore="RCO_SalesTax_Object_store">
+			<os:default-value ><![CDATA[${workflow.salestax.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Retrieve Last Execution Date" doc:id="f946165d-99e7-483d-a69a-30613daff6bc" message="Retrieve Last Execution Date #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="e7136087-a6b5-44a2-8b5d-f19b5cddc91f" variableName="lastModifiedDate"/>
+		<set-variable value="#[&quot;SELECT Account__c FROM Sales_Tax_Exemption__c Where Account__c &lt;&gt; null And Account__r.Salesforce_Auto_Number__c &lt;&gt; null And Status__c = 'Approved' And LastModifiedDate &gt; &quot; ++ (vars.lastModifiedDate as String)]" doc:name="Set Sf Query" doc:id="5f6c96ab-3ccf-448b-87d8-47efe469b4de" variableName="taxexempt_sfquery" />
+		<flow-ref doc:name="Flow Reference" doc:id="84825680-435c-4f93-87f4-b450a724f30e" name="sfdc-salestax-to-rco-sftp-flow" />
+		
+	</sub-flow>
+
+</mule>

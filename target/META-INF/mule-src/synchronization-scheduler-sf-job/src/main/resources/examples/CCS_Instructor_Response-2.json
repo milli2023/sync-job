@@ -1,0 +1,16 @@
+[
+{
+  "Id": "",
+  "Name": "",
+  "Instructor_Id__c": "",
+  "Batch_Class__c": "",
+  "Batch_Class__r": { 
+  	"Course_Code__c" : "",
+	"ILT_Class__c" : ""
+  },
+  "First_Name__c": "",
+  "Last_Name__c": "",
+  "Email_Address__c": "",
+  "CreatedDate": ""
+}
+]

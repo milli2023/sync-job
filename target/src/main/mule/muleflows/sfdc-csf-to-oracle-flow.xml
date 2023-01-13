@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<flow name="sfdc-csf-to-oracle-flow" doc:id="e9eb6131-f793-4962-b7cc-9d2f711e25b3" >
+		<os:retrieve doc:name="Retrieve" doc:id="816d7f30-21f8-470f-a53f-6a96f91a26d2" key="CreatedDate" objectStore="CFS_Oracle_Object_store">
+			<os:default-value ><![CDATA[${workflow.cfs-oracle.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Logger" doc:id="91d819fc-fd94-4f7c-9f54-c5b72ad485b4" message="Last Execution Date #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="87607bc8-0e1d-4c91-be51-bd09bd0fba58" variableName="createdDate"/>
+		<salesforce:query doc:name="Integration File " doc:id="de0ea6c0-4f9b-4c8b-a2b1-22971d88de32" config-ref="Salesforce_Config">
+			<reconnect />
+			<salesforce:salesforce-query ><![CDATA[SELECT File_Name__c, Record_Data__c, CreatedDate FROM Integration_Files__c where Target_System__c = 'CFS'  and Sequence_Number__c > 1 and  CreatedDate > :createdDate]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"createdDate" : vars.createdDate
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="INFO" doc:name="Logger" doc:id="239d7e33-b2eb-40cc-9ed4-2bc8d2489d7a" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="fe1fb1db-d42f-4cac-8635-2759b363c70f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var temp = payload map ( payload01 , indexOfPayload01 ) -> (payload01.Record_Data__c replace /,\"/  with "|\"" replace /\",/  with "\"|" splitBy('\r\n')) map using( tmp = $ replace /\"/ with "" splitBy("|")){
+"TRANSACTION_DATE": tmp[0]  replace /([\/])/ with "-",
+"UNIT_CODE": tmp[1],
+"FOCIS_CATEGORY" : tmp[2],
+"BILL_TO_ORG_NAME" : tmp[3],
+"BILL_TO_ORG_ADDRESS" : tmp[4],
+"BILL_TO_ORG_CITY" : tmp[5],
+"BILL_TO_ORG_STATE" : tmp[6],
+"BILL_TO_ORG_ZIPCODE" : tmp[7],
+"BILL_TO_ORG_COUNTRY" : tmp[8],
+"USER_FIELD3" : tmp[9],
+"BILL_TO_ORG_PRIMARYPHONE" : tmp[10],
+"COURSE_NUM" : tmp[11],
+"COURSE_NAME" : tmp[12],
+"END_DATE" : tmp[13] replace /([\/])/ with "-",
+"CRS_COMMENTS" : tmp[14],
+"ORDER_NUM" : tmp[15],
+"TERMS" : tmp[16],
+"TRANSACTION_AMT" : tmp[17] as Number default 0,
+"BILL_TO_ORGID" : tmp[18],
+"BILL_TO_ADDRESS2" : tmp[19],
+"BILL_TO_ORG_BILL_CONTACT" : tmp[20],
+"PAYMENT_CATEGORY" : tmp[21],
+"PO_NUM" : tmp[22],
+"FULL_NAME" : tmp[23],
+"OFFERING_ID" : tmp[24], 
+"PER_PERSON_FEE" : tmp[25] as Number default 0 ,
+"NUMBER_OF_STUDENTS" : tmp[26] as Number default 0,
+"ORG_TYPE" : tmp[27],
+"NK_PAYMENT_ID" : tmp[28],
+"NK_BILL_TO_ORG_ID" : tmp[29],
+"MAX_INSTRUCTOR_FULL_NAME" : tmp[30],
+"AP_CODE" : tmp[31] default "",
+"FILENAME" : payload01.File_Name__c ,
+"CREATION_DATE" : now() as String{format: 'yyyy-MM-dd hh:m:ss'},
+"LAST_UPDATE_DATE" : now() as String{format: 'yyyy-MM-dd hh:m:ss'},
+"REQUEST_ID" : 1,
+"PROCESS_FLAG" : 1,
+"DUPLICATEG" : 0,
+"CreatedDate": payload01.CreatedDate as String{format: 'yyyy-MM-ddThh:m:ss.000Z'}
+}
+var rows = flatten(temp)
+---
+rows ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="cb93dae6-0406-4f19-a780-0f8cc7c5b84f" message="#[payload]"/>
+		<choice doc:name="Choice" doc:id="8fc1ca3d-24b5-45dd-8472-a885fe2fe84c" >
+			<when expression="#[sizeOf(payload) != 0]">
+				<try doc:name="Try" doc:id="f107b00f-133d-4ccb-a19c-242b29fd09d0">
+			<foreach doc:name="For Each" doc:id="a8d58545-8003-42e3-bbf0-02a576043e50" collection="#[payload]">
+			<logger level="INFO" doc:name="Logger" doc:id="84ec77c7-3eed-42a3-b7b8-26f2cdf85c51" message="#[payload]" />
+ 
+			<set-variable value="#[payload.CreatedDate]" doc:name="Record CreatedDate" doc:id="c89f54ec-f401-49b8-bbbb-7a6734b4e0fc" variableName="CreatedDate"/>
+
+			<db:insert doc:name="ARCUSER.ARC_PHSS_MULE_PRESTAGING" doc:id="a69117a3-12c7-463b-addf-bc2adb2fee66" config-ref="Oracle_Database_Config">
+				<db:sql><![CDATA[Insert into ARCUSER.ARC_PHSS_MULE_PRESTAGING (TRANSACTION_DATE,UNIT_CODE,FOCIS_CATEGORY,BILL_TO_ORG_NAME,BILL_TO_ORG_ADDRESS,BILL_TO_ORG_CITY,BILL_TO_ORG_STATE,BILL_TO_ORG_ZIPCODE,BILL_TO_ORG_COUNTRY,USER_FIELD3,BILL_TO_ORG_PRIMARYPHONE,COURSE_NUM,COURSE_NAME,END_DATE,CRS_COMMENTS,ORDER_NUM,TERMS,TRANSACTION_AMT,BILL_TO_ORGID,BILL_TO_ADDRESS2,BILL_TO_ORG_BILL_CONTACT,PAYMENT_CATEGORY,PO_NUM,FULL_NAME,OFFERING_ID,PER_PERSON_FEE,NUMBER_OF_STUDENTS,ORG_TYPE,NK_PAYMENT_ID,NK_BILL_TO_ORG_ID,MAX_INSTRUCTOR_FULL_NAME,AP_CODE,FILENAME,CREATION_DATE,LAST_UPDATE_DATE,PROCESS_FLAG) 
+ values (:TRANSACTION_DATE,:UNIT_CODE,:FOCIS_CATEGORY,:BILL_TO_ORG_NAME,:BILL_TO_ORG_ADDRESS,:BILL_TO_ORG_CITY,:BILL_TO_ORG_STATE,:BILL_TO_ORG_ZIPCODE,:BILL_TO_ORG_COUNTRY,:USER_FIELD3,:BILL_TO_ORG_PRIMARYPHONE,:COURSE_NUM,:COURSE_NAME,:END_DATE,:CRS_COMMENTS,:ORDER_NUM,:TERMS,:TRANSACTION_AMT,:BILL_TO_ORGID,:BILL_TO_ADDRESS2,:BILL_TO_ORG_BILL_CONTACT,:PAYMENT_CATEGORY,:PO_NUM,:FULL_NAME,:OFFERING_ID,:PER_PERSON_FEE,:NUMBER_OF_STUDENTS,:ORG_TYPE,:NK_PAYMENT_ID,:NK_BILL_TO_ORG_ID,:MAX_INSTRUCTOR_FULL_NAME,:AP_CODE,:FILENAME,:CREATION_DATE,:LAST_UPDATE_DATE,:PROCESS_FLAG)
+]]></db:sql>
+				<db:input-parameters><![CDATA[#[{'TRANSACTION_DATE':payload.TRANSACTION_DATE,'UNIT_CODE':payload.UNIT_CODE,'FOCIS_CATEGORY':payload.FOCIS_CATEGORY,'BILL_TO_ORG_NAME':payload.BILL_TO_ORG_NAME,'BILL_TO_ORG_ADDRESS':payload.BILL_TO_ORG_ADDRESS,'BILL_TO_ORG_CITY':payload.BILL_TO_ORG_CITY,'BILL_TO_ORG_STATE':payload.BILL_TO_ORG_STATE,'BILL_TO_ORG_ZIPCODE':payload.BILL_TO_ORG_ZIPCODE,'BILL_TO_ORG_COUNTRY':payload.BILL_TO_ORG_COUNTRY,'USER_FIELD3':payload.USER_FIELD3,'BILL_TO_ORG_PRIMARYPHONE':payload.BILL_TO_ORG_PRIMARYPHONE,'COURSE_NUM':payload.COURSE_NUM,'COURSE_NAME':payload.COURSE_NAME,'END_DATE':payload.END_DATE,'CRS_COMMENTS':payload.CRS_COMMENTS,'ORDER_NUM':payload.ORDER_NUM,'TERMS':payload.TERMS,'TRANSACTION_AMT':payload.TRANSACTION_AMT,'BILL_TO_ORGID':payload.BILL_TO_ORGID,'BILL_TO_ADDRESS2':payload.BILL_TO_ADDRESS2,'BILL_TO_ORG_BILL_CONTACT':payload.BILL_TO_ORG_BILL_CONTACT,'PAYMENT_CATEGORY':payload.PAYMENT_CATEGORY,'PO_NUM':payload.PO_NUM,'FULL_NAME':payload.FULL_NAME,'OFFERING_ID':payload.OFFERING_ID,'PER_PERSON_FEE':payload.PER_PERSON_FEE,'NUMBER_OF_STUDENTS':payload.NUMBER_OF_STUDENTS,'ORG_TYPE':payload.ORG_TYPE,'NK_PAYMENT_ID':payload.NK_PAYMENT_ID,'NK_BILL_TO_ORG_ID':payload.NK_BILL_TO_ORG_ID,'MAX_INSTRUCTOR_FULL_NAME':payload.MAX_INSTRUCTOR_FULL_NAME,'AP_CODE':payload.AP_CODE,'FILENAME':payload.FILENAME,'CREATION_DATE':payload.CREATION_DATE,'LAST_UPDATE_DATE':payload.LAST_UPDATE_DATE,'REQUEST_ID':payload.REQUEST_ID,'PROCESS_FLAG':payload.PROCESS_FLAG,'DUPLICATEG':payload.DUPLICATEG}]]]></db:input-parameters>
+			</db:insert>
+
+		</foreach>
+					<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="cacd0792-5f19-4573-acfe-ad263ede475f">
+					<email:send doc:name="Send CFS Email Escalation" doc:id="77110a7a-f7de-4c09-8235-32aef38f9b27" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - CFS Synchronization Process Error">
+						<email:to-addresses>
+							<email:to-address value="john.cordero@redcross.org" />
+						</email:to-addresses>
+						<email:body contentType="text/html" >
+								</email:body>
+					</email:send>
+				</on-error-continue>
+			</error-handler>
+		</try>
+				<logger level="INFO" doc:name="Logger" doc:id="b2ec5c1b-1a82-406d-a063-20bfea219fe0" message="Storing Last Executed Date of #[vars.createdDate]" />
+				<os:store doc:name="Store" doc:id="f9a9e31a-aa4d-41b3-af44-13abb36fee62" objectStore="CFS_Oracle_Object_store" key="CreatedDate">
+			<os:value><![CDATA[#[vars.CreatedDate]]]></os:value>
+		</os:store>
+			</when>
+			<otherwise >
+				<email:send doc:name="CFS No Integration Records Found" doc:id="aedfaad7-648d-41d7-aaab-536a5f395cc0" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="MS - CFS Synchronization Process No Records to Process">
+					<email:to-addresses >
+						<email:to-address value="john.cordero@redcross.org" />
+					</email:to-addresses>
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[<p>
+
+<h3> No records found </h3> 
+<br/>
+<i> Mulesoft Synchronization Scheduler Application </i>
+</p>]]></email:content>
+					</email:body>
+				</email:send>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

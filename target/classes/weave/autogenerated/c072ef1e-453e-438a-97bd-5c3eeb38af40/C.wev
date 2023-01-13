@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_c072ef1e_453e_438a_97bd_5c3eeb38af40_Output_Variables_Account__C = Any
+

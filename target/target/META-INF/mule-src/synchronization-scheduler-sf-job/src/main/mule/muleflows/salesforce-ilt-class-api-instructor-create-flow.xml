@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<flow name="salesforce-ilt-class-api-instructor-create-flow" doc:id="d3917794-30d2-4f48-b1b3-6e75220a19a1" >
+		<os:retrieve doc:name="Retrieve" doc:id="7ef3ac1e-d8c2-4506-bdfb-4a2da5b544e8" key="LastExecutedDate" objectStore="SFDC_Instructor_Object_store">
+			<os:default-value ><![CDATA[${workflow.salesforce.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Logger" doc:id="4304a12c-e751-44c9-896f-913aee1870e2" message="Last Execution Date #[payload]"/>
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="b4d6599d-4e15-4867-a047-99746e1fb0c3" variableName="lastExecutedDate"/>
+		<set-variable doc:name="Initialize BadInstructorList" doc:id="f824b449-844a-4dbd-800e-75702b5381d0" variableName="BadInstructorList" value='#[[]]'/>
+		<salesforce:query doc:name="CCS_Batch_Instructor__c Object" doc:id="b9e18111-918f-4d0f-bcf2-23d80ebea6b2" config-ref="Salesforce_Config">
+			<reconnect />
+			<salesforce:salesforce-query ><![CDATA[SELECT 
+Id,
+Name,
+Instructor_Id__c,
+Batch_Class__c,
+Batch_Class__r.Course_Code__c,
+Batch_Class__r.ILT_Class__c,
+Batch_Class__r.ILT_Class__r.Skedulo_Account__r.Name,
+First_Name__c,
+Last_Name__c,
+Email_Address__c,
+CreatedDate  
+FROM CCS_Batch_Instructor__c  Where CreatedDate > :LastExecutedDate]]>
+		</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"LastExecutedDate" : vars.lastExecutedDate
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="215f41ee-fd05-44d0-842f-64d89980766f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+
+output application/json
+
+---
+
+payload map ( payload01 , indexOfPayload01 ) -> {
+	Id: payload01.Id,
+	Name: payload01.Name,
+	Instructor_Id__c: payload01.Instructor_Id__c,
+	Batch_Class__c: payload01.Batch_Class__c,
+	Batch_Class__r: {
+		Course_Code__c: payload01.Batch_Class__r.Course_Code__c,
+		ILT_Class__c: payload01.Batch_Class__r.ILT_Class__c,
+		ILT_Class__r: {
+			Skedulo_Account__r: {
+				Name: payload01.Batch_Class__r.ILT_Class__r.Skedulo_Account__r.Name
+			}
+		}
+	},
+	First_Name__c: payload01.First_Name__c,
+	Last_Name__c: payload01.Last_Name__c,
+	Email_Address__c: payload01.Email_Address__c,
+	CreatedDate: payload01.CreatedDate
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Delete previous Instructors" doc:id="ef005ac0-10c6-4b6b-a0a2-291fb027cf75" name="salesforce-ilt-class-api-instructor-create-delete-previous-instructorsflow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="94dfa248-0beb-4fbd-934e-56ae43c8bcb5" message="Total CCS Batch Instructors to Process #[payload]"/>
+		<choice doc:name="Choice" doc:id="8649a854-ce29-4760-96c4-0fd767500e00" >
+			<when expression="#[sizeOf(payload) != 0]">
+				<try doc:name="Try" doc:id="8d58708a-e6a9-489a-8fb4-3e297e9f7b08" >
+					<foreach doc:name="For Each" doc:id="d46085f6-b5bc-4f3c-a159-392bac743ac8" >
+						<set-variable value="#[payload]" doc:name="CCS_Batch_Instructor" doc:id="9b73f8a2-c084-4877-aadd-f4f822c0154a" variableName="CCS_Batch_Instructor" />
+						<set-variable value="#[payload.Batch_Class__r.ILT_Class__c]" doc:name="ILT Class" doc:id="6b26966d-75f7-413b-be4c-89ac885569a3" variableName="ILT_Class__c" />
+						<flow-ref doc:name="Lookup ILT CLass" doc:id="a6f31f53-8f8d-4193-9e05-098cac4f6b27" name="salesforce-ilt-class-api-instructor-create-lookup-class-flow" />
+						<choice doc:name="Choice" doc:id="f9ceffea-7e75-4118-8e56-166403ee507e" >
+							<when expression="#[sizeOf(payload) &gt; 0]">
+								<set-variable value="#[false]" doc:name="primary instructor ind to false" doc:id="397925ae-f8d1-4eb7-8609-5ec4bc55a6cb" variableName="primaryInstructorInd"/>
+							</when>
+							<otherwise >
+								<set-variable value="#[true]" doc:name="primary instructor ind to true" doc:id="391d5f75-05f9-4d11-a6cd-cc25d4c2cf00" variableName="primaryInstructorInd"/>
+							</otherwise>
+						</choice>
+						<set-payload value="#[vars.CCS_Batch_Instructor]" doc:name="Set Payload" doc:id="eeda8226-ce6b-4dfd-a651-3cf6b39d3520" />
+						<flow-ref doc:name="Lookup ILT Instructor User" doc:id="a3c9e710-5c2d-48a8-95bc-844c32dc1696" name="salesforce-ilt-class-api-instructor-create-lookup-Instructor-User-flow" />
+						<choice doc:name="Choice" doc:id="2801868d-5836-45b2-ad07-6744cea5041e">
+								    <when expression="#[sizeOf(payload) &gt; 1]">
+										<logger level="INFO" doc:name="Logger" doc:id="93b25c1d-2053-43a4-80d7-1a206c48b437" message="Multiple User Records Returned for Instructor User Id" />
+									</when>
+									<when expression="#[sizeOf(payload) == 1]">
+										
+										<flow-ref doc:name="Insert Instructor" doc:id="80656934-9daa-4f9e-bd95-608ea86695d1" name="salesforce-ilt-class-api-instructor-create-Insert-Instructorflow" />
+								<choice doc:name="Choice" doc:id="9fae434f-a226-4d22-8312-52c8917cf8c7" >
+									<when expression="#[payload[0].Status == 'ERROR']">
+										<logger level="INFO" doc:name="Logger" doc:id="ef0bcee2-d47f-45b0-92b0-aeeae38e766e" message="Output v1  #[payload]" />
+										<ee:transform doc:name="Transform Message" doc:id="7f7a5d6f-6cd9-476d-9f18-947b3319e2ba">
+									<ee:message>
+										<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+---
+{
+	"badInstructors" : vars.BadInstructorList << (payload)
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+										<logger level="INFO" doc:name="Logger" doc:id="1c17c671-cbf7-49b0-89d1-711e9ac33d6e" message="What Instructor Error List #[payload]" />
+										<email:send doc:name="MS - Salesforce CRE API ILT Class Instructor Creation Process Error - Salesforce ILT Instructor Process Error" doc:id="bb36f252-e885-4b52-99d8-ba7bcd748ee4" config-ref="AWS_Email_SMTP" fromAddress="arc_phss@redcross.org" subject="mulesoft  ${MULE_ENV} - Salesforce CRE API ILT Class Instructor Creation Process Error - Salesforce ILT Instructor Process Error">
+													<email:to-addresses>
+														<email:to-address value="john.cordero@redcross.org" />
+													</email:to-addresses>
+													<email:body contentType="text/html">
+													</email:body>
+										</email:send>
+									</when>
+									<otherwise >
+										<logger level="INFO" doc:name="Logger" doc:id="2aa08e5c-39a0-4bcb-a208-132ffafa77cd" message="Instructor updated successfully #[payload]"/>
+									</otherwise>
+								</choice>
+									</when>
+									<otherwise>
+										<logger level="WARN" doc:name="Logger" doc:id="fbe96437-7a98-4069-8f16-8abe196f2523" message="User Id Not Found on User Object" />
+									</otherwise>
+								</choice>
+						<set-variable value="#[vars.CCS_Batch_Instructor.CreatedDate]" doc:name="LastExecutedDate" doc:id="f2fee95e-2872-4c05-ad97-9aa3edef1e74" variableName="LastExecutedDate" />
+						
+					</foreach>
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a1cf4bc2-9b82-4e8b-9b65-d4d26cdb0fb8" >
+							<logger level="ERROR" doc:name="Logger" doc:id="dee38ed2-f287-44ae-9c00-974d14cbd8b4" message="#[payload]"/>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="34c61554-52ca-43fc-988d-fdb492869838" message="Storing Last Executed Date of #[vars.LastExecutedDate]" />
+		<logger level="INFO" doc:name="Logger" doc:id="c666498e-0d95-4bf2-94c4-bfd41199882a" message="Do we have Bad Instructors #[vars.BadInstructorList]"/>
+		<os:store doc:name="Store" doc:id="655ef39c-25a4-444b-9365-7ea9e293e223" objectStore="SFDC_Instructor_Object_store" key="LastExecutedDate">
+			<os:value><![CDATA[#[vars.lastExecutedDate]]]></os:value>
+		</os:store>
+	</flow>
+	<flow name="salesforce-ilt-class-api-instructor-create-lookup-class-flow" doc:id="c63070e7-b049-4441-960a-38bb04dc7221" >
+		<logger level="INFO" doc:name="Logger" doc:id="e93c0475-aecf-4f8b-95d9-c534b675fc7a" message='ILT Class #[vars.ILT_Class__c]' />
+		<try doc:name="Try" doc:id="c71b05c4-40e8-4e87-8656-b4a0abd778b7" >
+			<salesforce:query doc:name="redwing__ILT_Instructor__c" doc:id="d8b09a13-0373-4b11-a6a7-696ec3069f49" config-ref="Salesforce_Config">
+				<reconnect />
+				<salesforce:salesforce-query><![CDATA[SELECT Id FROM redwing__ILT_Instructor__c Where redwing__ILT_Class__c = ':ILT_Class_Id']]></salesforce:salesforce-query>
+					<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"ILT_Class_Id" : vars.ILT_Class__c
+}]]]></salesforce:parameters>
+				</salesforce:query>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2d79a307-9221-403d-a783-cac30c98702b" />
+				</error-handler>
+		</try>
+		<logger level="INFO" doc:name="Logger" doc:id="74100e12-8fd6-4569-aca5-df63c24b8f2f" message="Results Size of Instructor Query  #[sizeOf(payload)]" />
+	</flow>
+	<flow name="salesforce-ilt-class-api-instructor-create-lookup-Instructor-User-flow" doc:id="d3a328ca-57ed-4818-9527-39739f32090e" >
+		<logger level="INFO" doc:name="Logger" doc:id="60672792-c634-4172-b4bd-7373802dcae4" message="Instructor to process #[payload.Instructor_Id__c]" />
+		<try doc:name="Try" doc:id="e4cc2158-5e3a-4338-9af6-83ffd12b7abd" >
+			<salesforce:query doc:name="Get User Id for Instuctor" doc:id="2961432a-b7e2-4be3-a667-ddcd64a9fac7" config-ref="Salesforce_Config">
+			<reconnect />
+				<salesforce:salesforce-query><![CDATA[SELECT Id FROM User Where Username = ':Instructor_Id__c']]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+	---
+	{
+		"Instructor_Id__c" : payload.Instructor_Id__c
+	}]]]></salesforce:parameters>
+			</salesforce:query>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c29d7d3e-c2e0-41cd-94cd-1e75cbd2d398" >
+					<logger level="ERROR" doc:name="Logger" doc:id="212fcae0-5b87-4031-83f3-99887497e816" message="Get User Id for Instructor  #[payload]"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message" doc:id="b923aec1-dcb5-412b-95a3-e3e03783c1ae">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="8e700f33-dac6-442d-9c10-72b18a44647a" message="Instructor User Response #[payload]" />
+	</flow>
+	<flow name="salesforce-ilt-class-api-instructor-create-Insert-Instructorflow" doc:id="600cfde8-b1b8-479b-854b-d4afe3493283" >
+	<ee:transform doc:name="Transform Message" doc:id="5845fa29-b1d4-4e6d-9d13-53ade906f856">
+									<ee:message>
+										<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	"redwing__ILT_Class__c":vars.ILT_Class__c,
+	"redwing__Instructor__c":payload[0].Id,
+	"redwing__Primary__c":vars.primaryInstructorInd
+}]]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+										<logger level="INFO" doc:name="Logger" doc:id="94c776a2-3437-4937-afb6-34ad30e71e69" message="Create Instructor Request Payload #[payload]"/>
+										<try doc:name="Try" doc:id="29429eb9-58b3-434a-8cbd-853aeaa55275">
+											<salesforce:create doc:name="redwing_ILT_Instructor__c" doc:id="92c7a089-2190-43b2-b5e8-56124a89be95" config-ref="Salesforce_Config" type="redwing__ILT_Instructor__c" >
+				<reconnect />
+			</salesforce:create>
+											<error-handler >
+												<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d3161ff2-a5bd-41c0-bb24-824fa77d2c12" >
+													<logger level="ERROR" doc:name="Logger" doc:id="b34fbe6b-2bb2-4535-b40d-18dc7c1bffdb" message="Error Creating ILT Instructor #[payload]"/>
+												</on-error-continue>
+											</error-handler>
+										</try>
+										<ee:transform doc:name="Transform Message" doc:id="3433d0fc-408e-4b57-8fc7-4de7972a5ab8">
+											<ee:message>
+												<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+											</ee:message>
+										</ee:transform>
+										<choice doc:name="Choice" doc:id="aea6d0ef-ac1a-4e66-8085-7db4115b9ed5">
+											<when expression="#[! payload.successful]">
+
+												<ee:transform doc:name="Transform Message" doc:id="634f4c50-438a-472b-85f1-9b9187a4af6f">
+													<ee:message>
+														<ee:set-payload><![CDATA[%dw 2.0
+																output application/json
+																---
+																[{
+																	Status:"ERROR",
+																	Organization: vars.CCS_Batch_Instructor.Batch_Class__r.ILT_Class__r.Skedulo_Account__r.Name,
+																	Id: vars.CCS_Batch_Instructor.Id,
+																	Name: vars.CCS_Batch_Instructor.Name,
+																	Instructor_Id__c: vars.CCS_Batch_Instructor.Instructor_Id__c,
+																	Batch_Class__c: vars.CCS_Batch_Instructor.Batch_Class__c,
+																	Batch_Class__r: {
+																		Course_Code__c: vars.CCS_Batch_Instructor.Batch_Class__r.Course_Code__c,
+																		ILT_Class__c: vars.CCS_Batch_Instructor.Batch_Class__r.ILT_Class__c
+																	},
+																	First_Name__c: vars.CCS_Batch_Instructor.First_Name__c,
+																	Last_Name__c: vars.CCS_Batch_Instructor.Last_Name__c,
+																	Email_Address__c: vars.CCS_Batch_Instructor.Email_Address__c,
+																	CreatedDate: vars.CCS_Batch_Instructor.CreatedDate,
+																	ErrorMessage: payload.items[0].payload.errors[0]
+																}]]]></ee:set-payload>
+													</ee:message>
+												</ee:transform>
+
+											</when>
+											<otherwise >
+												<logger level="INFO" doc:name="Logger" doc:id="da17d3c3-f386-4024-a92d-d1dfa28bf0fa" message="Created Instructor #[payload]"/>
+											</otherwise>
+										</choice>
+	</flow>
+	<flow name="salesforce-ilt-class-api-instructor-create-delete-previous-instructorsflow" doc:id="fb8f30fb-abed-4859-9f92-cb44834f53bf" >
+		<set-variable value="#[payload]" doc:name="Save CCS Batch Instructor List" doc:id="1f30e07e-a21f-4f19-bf9d-fcbc40c75139" variableName="ccsBatchInstructorList"/>
+		<ee:transform doc:name="Transform Message" doc:id="216d4ded-969a-4ef3-9de6-2c22e1fd5a3e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+
+vars.ccsBatchInstructorList map ( payload01 , indexOfPayload01 ) -> {
+   ILT_Class__c: payload01.Batch_Class__r.ILT_Class__c,
+   First_Name__c: payload01.First_Name__c,
+   Last_Name__c: payload01.Last_Name__c,
+   Email_Address__c: payload01.Email_Address__c
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="7d55c4de-e3cd-4263-b7d3-4a13b2a52145" message="Classes and Instructors to Remove  #[payload]"/>
+		  
+		<foreach doc:name="For Each" doc:id="b00796c2-d09c-4509-8ef7-363fcfc02498" >
+			<try doc:name="Try" doc:id="913a8494-6430-46f1-bb51-1020f2754a79">
+			<salesforce:query doc:name="Get Instructor Id to delete" doc:id="4ef41066-3e92-4a7c-911d-98e7838d84c5" config-ref="Salesforce_Config" >
+					<reconnect />
+					<salesforce:salesforce-query ><![CDATA[SELECT Id FROM redwing__ILT_Instructor__c where redwing__ILT_Class__c = ':ILTClassGuid']]></salesforce:salesforce-query>
+					<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"ILTClassGuid": payload.ILT_Class__c
+}]]]></salesforce:parameters>
+				</salesforce:query>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="77930b61-a4d6-44d7-8895-1b8e4e250d59" >
+						<logger level="ERROR" doc:name="Logger" doc:id="677f51d3-d587-405c-9421-19eb78861fe3" message="Get Instructor Id to delete #[payload]"/>
+					</on-error-continue>
+				</error-handler>
+		</try>
+			<ee:transform doc:name="Transform Message" doc:id="5887cbd6-02ab-445f-8bfe-a8dc06afc2d8" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="43a2c8e4-1553-486b-a2e7-2bffc0fb2716" message="Instructors to delete #[payload]"/>
+			<parallel-foreach doc:name="Parallel For Each" doc:id="a5ab1bc7-8e67-4e54-864e-1ab4ec8a4a76" >
+				<set-payload value="#[[payload.Id]]" doc:name="Set Payload" doc:id="cdc75753-4ef7-4d0b-b139-fa68d9990f61" />
+				<try doc:name="Try" doc:id="bb6f3648-5094-4d2f-9850-7f9dbe099994">
+				<salesforce:delete doc:name="Delete Previous Assigned Instructors from ILT Class" doc:id="5d937394-6257-4528-80e8-fa75a92d5cb2" config-ref="Salesforce_Config" >
+						<reconnect />
+					</salesforce:delete>
+					<error-handler>
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="69958126-32e5-43e6-adb7-21095195f13e">
+							<logger level="ERROR" doc:name="Logger" doc:id="94d4f833-6bd5-4072-bf9a-93f3e541cb55" message="Delete Previous Assigned Instructors from ILT Class #[payload]" />
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</parallel-foreach>
+		
+		</foreach>
+		
+		<set-payload value="#[vars.ccsBatchInstructorList]" doc:name="Back to Original Payload" doc:id="d7797b7e-5094-4349-acfb-8e50bc4ae142" />
+	</flow>
+</mule>

@@ -1,0 +1,12 @@
+%dw 2.0
+
+type auto_d10c890f_379b_42dd_b0b1_60f59b8e5563_Output_Attributes = {|
+  timestamp*: DateTime {"typeId": "java.time.LocalDateTime"}, 
+  size*: Number, 
+  symbolicLink*?: Boolean {"typeId": "boolean"}, 
+  fileName*: String, 
+  regularSize*?: Boolean {"typeId": "boolean"}, 
+  directory*?: Boolean {"typeId": "boolean"}, 
+  path*: String
+|}
+

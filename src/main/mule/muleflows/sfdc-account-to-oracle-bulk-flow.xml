@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<flow name="sfdc-account-to-oracle-bulk-flow" doc:id="d3917794-30d2-4f48-b1b3-6e75220a19a1">
+		<os:retrieve doc:name="Retrieve" doc:id="7ef3ac1e-d8c2-4506-bdfb-4a2da5b544e8" key="LastExecutedDate" objectStore="CFS_Oracle_SFDC_Account_Bulk_Object_store">
+			<os:default-value><![CDATA[${workflow.account.last.executed.date}]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="Logger" doc:id="4304a12c-e751-44c9-896f-913aee1870e2" message="Last Execution Date #[payload]" />
+		<set-variable value="#[payload]" doc:name="Last Executed Date" doc:id="b4d6599d-4e15-4867-a047-99746e1fb0c3" variableName="lastExecutedDate" />
+		<set-variable value="${sfdc.sb.account.record.type.guid}" doc:name="SB Organization Account" doc:id="e223fc1e-f8cb-48da-be21-f3e75af100ef" variableName="sbOrgAccount" />
+		<ee:transform doc:name="Transform Message" doc:id="54bb4cf8-f4c8-4c49-bcfb-ec5bbf46e423">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	operation: "query", 
+	query: "Select Id,CFS_Account_Number_1__c,Name,nk_billto_org_id__c,SABA_LMS_Code__c,Special_Invoicing__c,BillingStreet,BillingCity,BillingState,BillingPostalCode,BillingCountry,Billing_Contact__c,Billing_Contact__r.Name,Billing_Contact__r.FirstName,Billing_Contact__r.LastName,Billing_Contact_phone__c,Billing_Contact_email__c,Payment_Terms__c,Invoice_delivery_Email__c,Invoice_Delivery_Type__c,Invoice_Delivery_Frequency__c,CreatedDate,CreatedById,LastModifiedDate,LastModifiedById from Account Where CFS_Account_Number_1__c <> null and (NOT CFS_Account_Number_1__c LIKE 'PR%') and LastModifiedDate > " ++   vars.lastExecutedDate as String 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="SFDC Account Bulk Query" doc:id="0016db84-f507-446e-95ea-7d04cb35f86d" name="sfdc-account-bulk-query" />
+		<logger level="INFO" doc:name="Logger" doc:id="350c6c8e-b321-4900-b21e-9cf073ab08bb" message="SFDC Bulk Query Response  #[payload]" />  
+		<batch:job jobName="sfdc-account-to-oracle-flowBatch_Job" doc:id="38a066e4-a8ed-4423-a393-4f7a74aabba1" blockSize="10000">
+			<batch:process-records>
+				<batch:step name="transformCsvToJson" doc:id="9126ed35-c80b-430d-94fc-33b7751c11b1">
+					<logger level="INFO" doc:name="Logger" doc:id="0a9d6e67-54f5-41d5-bca9-63bc6fa494d0" message="Batch Step 1 #[payload]"/>
+					<ee:transform doc:name="Transform Message" doc:id="215f41ee-fd05-44d0-842f-64d89980766f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+
+output application/json
+
+fun validateAddress(address) = if(address != null) if (sizeOf(address) > 40) address[0 to 39] else address as String default "Address Not Parsed Correctly" else ""
+fun validateCustomerName(name) = if(name != null) if (sizeOf(name) > 50) name[0 to 49] else name default "Name Not Parsed Correctly" else ""
+fun validateCity(city) = if(city != null) if (sizeOf(city) > 30) city[0 to 29] else city default "City Not Parsed Correctly" else ""
+fun validateZip(zip) = if(zip != null) if (sizeOf(zip) > 10) zip[0 to 9] else zip default "Zip Not Parsed Correctly" else "" 
+fun validateTwoChar(string) = if(string != null) if (sizeOf(string) > 2) string[0 to 1] else string default "String Not Parsed Correctly" else "" 
+
+---
+{
+	"CUSTOMER_NUMBER": payload.CFS_Account_Number_1__c[0] default "",
+	"CUSTOMER_NAME": validateCustomerName(payload.Name[0]),
+	"ORIG_SYSTEM_CUSTOMER_REF": payload.nk_billto_org_id__c[0] default "Not Available",
+	"BILL_TO_ORGID": payload.SABA_LMS_Code__c[0] default "",
+	"USER_FIELD3": payload.Special_Invoicing__c[0] default "",
+	"CUSTOMER_CLASS": "",
+	"PAYMENT_TERMS": payload.Payment_Terms__c[0] default "",
+	"OUTREACH_FIRST_NAME": payload.Billing_Contact__r.FirstName[0]  default "",
+	"OUTREACH_LAST_NAME": payload.Billing_Contact__r.LastName[0] default "",
+	"OUTREACH_EMAIL": payload.Billing_Contact_email__c[0] default "",
+	"SITE_NAME": payload.Site[0] default "",
+	"SITE_USE_CODE": "",
+	"PRIMARY_SITE_USE_FLAG": "",
+	"ADDRESS1": if(payload.BillingStreet != null) validateAddress((payload.BillingStreet[0] as String splitBy("\n"))[0]) else "",
+	"ADDRESS2": if(payload.BillingStreet != null) if((payload.BillingStreet[0]  as String splitBy("\n"))[1] != null) validateAddress((payload.BillingStreet[0]  as String splitBy("\n"))[1]) else "" else "",        
+	"CITY": validateCity(payload.BillingCity[0]),
+	"STATE": validateTwoChar(payload.BillingState[0]),
+	"ZIP": validateZip(payload.BillingPostalCode[0]),
+	"COUNTRY": validateTwoChar(payload.BillingCountry[0]),
+	"LOCATION": "",
+	"BILL_TO_ORG_BILL_CONTACT": payload.Billing_Contact__c[0] default "",
+	"BILL_TO_ORG_PRIMARYPHONE": payload.Billing_Contact_phone__c[0] default "",
+	"BILL_TO_CONTACT_NAME": payload.Billing_Contact__r.Name[0] default "",
+	"BILL_TO_CONTACT_EMAIL": payload.Billing_Contact_email__c[0] default "",
+	"PHSS_CONTACT_PHONE":  payload.Billing_Contact_phone__c[0] default "",
+	"PHSS_CONTACT_NAME": payload.Billing_Contact__r.Name[0]  default "",
+	"INVOICE_DELIVERY_EMAIL": payload.Invoice_delivery_Email__c[0] default "",
+	"INVOICE_DELIVERY_METHOD": payload.Invoice_Delivery_Type__c[0] default "",
+	"INVOICE_DELIVERY_FREQUENCY": payload.Invoice_Delivery_Frequency__c[0] default "",
+	"FLEXFIELD1": "",
+	"FLEXFIELD2": "",
+	"FLEXFIELD3": "",
+	"FLEXFIELD4": "",
+	"FLEXFIELD5": "",
+	"FLEXFIELD6": "",
+	"FLEXFIELD7": "",
+	"FLEXFIELD8": "",
+	"FLEXFIELD9": "",
+	"FLEXFIELD10": "",
+	"FLEXFIELD11": "",
+	"FLEXFIELD12": "",
+	"FLEXFIELD13": "",
+	"FLEXFIELD14": "",
+	"FLEXFIELD15": "",
+	"FLEXFIELD16": "",
+	"FLEXFIELD17": "",
+	"FLEXFIELD18": "",
+	"FLEXFIELD19": "",
+	"FLEXFIELD20": "",
+	"RECORD_ID": 0,
+	"REQUEST_ID": 0,
+	"CONCURRENT_PROGRAM_ID": 0,
+	"STATUS_FLAG": "",
+	"COUNT_OF_SUCCESS_UPDATES": 0,
+	"COUNT_OF_FAIL_UPDATES": 0,
+	"CREATION_DATE": now() as String{
+		format: 'yyyy-MM-dd hh:m:ss'
+	},
+	"CREATED_BY": payload.CreatedById[0],
+	"LAST_UPDATE_DATE": now() as String{
+		format: 'yyyy-MM-dd hh:m:ss'
+	},
+	"LAST_UPDATE_BY": payload.LastModifiedById[0],
+	"lastUpdateDate": payload.LastModifiedDate[0]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+					<logger level="INFO" doc:name="Logger" doc:id="84e604c0-9230-45bc-967e-595729a082a5" message="Batch Step 1 Transformation #[payload]" />
+				</batch:step>
+				<batch:step name="aggregateJsonPaylodForBulkInsert" doc:id="8ded0830-4d02-44ec-b269-7af13bd57c61" >
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="007c0954-4243-49a7-a62b-4fc8742e2a92" size="2000">
+						<!-- 
+						<db:bulk-insert doc:name="Bulk insert" doc:id="db655c75-6b48-47c9-b9cd-2ed4d401e328" config-ref="Oracle_Database_Config">
+							<db:sql ><![CDATA[INSERT INTO APPS.ARC_CUSTOMER_UPDATES_EXTERNAL (CUSTOMER_NUMBER, CUSTOMER_NAME, 
+ORIG_SYSTEM_CUSTOMER_REF, BILL_TO_ORGID, USER_FIELD3, CUSTOMER_CLASS, PAYMENT_TERMS, OUTREACH_FIRST_NAME, OUTREACH_LAST_NAME, OUTREACH_EMAIL, 
+SITE_NAME, SITE_USE_CODE, PRIMARY_SITE_USE_FLAG, ADDRESS1, ADDRESS2, CITY, STATE, ZIP, COUNTRY, LOCATION, BILL_TO_CONTACT_NAME, 
+PHSS_CONTACT_PHONE, PHSS_CONTACT_NAME, INVOICE_DELIVERY_EMAIL, INVOICE_DELIVERY_METHOD, INVOICE_DELIVERY_FREQUENCY, FLEXFIELD1, FLEXFIELD2, 
+FLEXFIELD3, FLEXFIELD4, FLEXFIELD5, FLEXFIELD6, FLEXFIELD7, FLEXFIELD8, FLEXFIELD9, FLEXFIELD10, FLEXFIELD11, FLEXFIELD12, FLEXFIELD13, 
+FLEXFIELD14, FLEXFIELD15, FLEXFIELD16, FLEXFIELD17, FLEXFIELD18, FLEXFIELD19, FLEXFIELD20, RECORD_ID, REQUEST_ID, CONCURRENT_PROGRAM_ID, 
+STATUS_FLAG, COUNT_OF_SUCCESS_UPDATES, COUNT_OF_FAIL_UPDATES, CREATION_DATE, CREATED_BY, LAST_UPDATE_DATE, LAST_UPDATE_BY ) 
+]]></db:sql>
+						</db:bulk-insert>
+						-->
+						<logger level="DEBUG" doc:name="Logger" doc:id="58fce251-0119-4453-915f-9c8a6f4e1977" message="Aggregator Payload #[payload]" />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete>
+				<logger level="INFO" doc:name="Logger" doc:id="253b11fb-c41a-4210-843d-1b806b4c4796" message="On Complete #[payload]" />
+				<logger level="INFO" doc:name="Logger" doc:id="b14557e6-7b42-4f82-bc69-9f9f331a161c" message="Storing Last Executed Date of #[vars.LastExecutedDate]" />
+				<os:store doc:name="Store" doc:id="8645c628-077e-4f3c-a886-b2c05695e474" objectStore="CFS_Oracle_SFDC_Account_Bulk_Object_store" key="LastExecutedDate">
+				<os:value><![CDATA[#[vars.LastExecutedDate]]]></os:value>
+				</os:store>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="sfdc-account-bulk-query" doc:id="9b963cbb-2739-4500-8bee-abdf1707f6ba">
+		<flow-ref doc:name="get-sf-accesstoken-subflow" doc:id="df7852fd-e334-43ee-9175-6b09b89196ea" name="get-sf-accesstoken-subflow" target="oAuthAccessTokenData" />
+		<try doc:name="Try" doc:id="27811735-e689-4bb3-a653-a75b3e0171e7">
+			<flow-ref doc:name="Submit SFDC Bulk Job" doc:id="c6eed4a3-8b47-4b0f-97c8-68aec465aed3" name="submit-sfdc-bulk-job-sub-flow" />
+			<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5745526b-3dc0-49cc-a432-a8e7e839f228" type="HTTP:SECURITY, HTTP:UNAUTHORIZED">
+					<logger level="INFO" doc:name="Logger" doc:id="e17497a8-825a-47dc-839e-eda1960d9e05" message="#[vars.loggingIdentifier] Submission of CRE Data failed. Retrying with new token" />
+					<flow-ref doc:name="generate-new-token-subflow" doc:id="980325a7-16dd-483f-9ace-4f8f4a2b093d" name="generate-new-token-subflow" target="oAuthAccessTokenData" />
+					<flow-ref doc:name="Resubmit SFDC Bulk Job" doc:id="e33dcfb3-502f-4134-8e82-998704c0f740" name="submit-sfdc-bulk-job-sub-flow" />
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</flow>
+	<sub-flow name="submit-sfdc-bulk-job-sub-flow" doc:id="4603fde2-8370-4d8e-8a26-5d1a5f72e74e">
+		<logger level="INFO" doc:name="Logger" doc:id="888cf9b6-1eda-4ea3-b03b-04a7aad1a917" message="Submit SFDC Bulk Job #[payload]" />
+		<http:request method="POST" doc:name="SFDC Create Bulk Query Job" doc:id="e6d176c2-0e44-47ae-baa6-0b5990b15cd0" config-ref="SF_Instance_HTTP_Request_Configuration" path="/services/data/v51.0/jobs/query">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	Authorization : (vars.oAuthAccessTokenData.token_type default 'Bearer') ++ ' ' ++ (vars.oAuthAccessTokenData.access_token default '')
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="c706486a-f35e-41b4-8ed9-dd01b27a317f" message="SFDC Create Bulk Query Job Response #[payload]" />
+		<flow-ref doc:name="Whileloop on Job Status" doc:id="3f2c9f14-c332-41cb-a317-45eaabf44e05" name="whileloop" />
+		<logger level="INFO" doc:name="Logger" doc:id="ffbe8e44-23e3-481f-aebb-dfd4e08afb9f" message="SFDC Status Bulk Query Job Response #[payload]" />
+		<http:request method="GET" doc:name="SFDC Fetch Bulk Query Results" doc:id="fd11fe6e-4d75-4dda-a1f8-ca7d34de0deb" config-ref="SF_Instance_HTTP_Request_Configuration" path="/services/data/v51.0/jobs/query/{jobId}/results">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	Authorization : (vars.oAuthAccessTokenData.token_type default 'Bearer') ++ ' ' ++ (vars.oAuthAccessTokenData.access_token default '')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"jobId" : payload.id
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="7d11f5cf-5a56-4226-bcd1-b0ffb45aa919">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+
+output application/csv
+---
+payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e384ee8b-56b8-4fda-88c6-a6d00a5e7825" message="SFDC Fetch Bulk Query Job Results #[payload ]" />
+	</sub-flow>
+	<sub-flow name="whileloop" doc:id="709ee485-bab4-4022-9b1b-d169e612b8cd" >
+		<http:request method="GET" doc:name="SFDC Status Bulk Query Job" doc:id="405f29ef-4496-405e-b198-e60224545c08" config-ref="SF_Instance_HTTP_Request_Configuration" path="/services/data/v51.0/jobs/query/{jobId}">
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	Authorization : (vars.oAuthAccessTokenData.token_type default 'Bearer') ++ ' ' ++ (vars.oAuthAccessTokenData.access_token default '')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"jobId" : payload.id
+}]]]></http:uri-params>
+		</http:request>
+		<choice doc:name="Choice" doc:id="db4f7133-298a-4f3d-a12b-4f7aca2ff896" >
+			<when expression="#[payload.state == 'JobComplete']">
+				<logger level="INFO" doc:name="Logger" doc:id="bd647ebf-aca1-41ee-b7cb-f92f25b85aef" message="SFDC Bulk Query Job has completed."/>
+			</when>
+			<when expression="#[payload.state == 'Failed' or payload.state == 'Aborted']">
+				<logger level="INFO" doc:name="Logger" doc:id="8fb5e233-9854-45c9-a5da-19aa21186f92" message="SFDC Bulk Query Job has Failed!!!"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="wait 60 seconds" doc:id="54be71b7-e845-4332-a650-47af4a6055e9">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::Runtime
+output application/json
+---
+payload wait 60000 // wait 60 seconds]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="Whileloop on Job Status" doc:id="8c4e9517-c91a-4a87-8ed1-0c304efb8bbc" name="whileloop"/>
+			</otherwise>
+		</choice>
+	</sub-flow>
+</mule>

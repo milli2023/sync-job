@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_c86998ca_70df_4c33_90df_e420ced90ada_Input_Variables_VertexTransactionId = String
+

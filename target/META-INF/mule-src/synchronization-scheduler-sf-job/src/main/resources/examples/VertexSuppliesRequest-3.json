@@ -1,0 +1,64 @@
+{
+	"customer": {
+		"customerCode": {
+			"classCode": "Distributors",
+			"isBusinessIndicator": true,
+			"value": "5484878"
+		},
+		"destination": {
+			"city": "Philadelphia",
+			"country": "US",
+			"mainDivision": "PA",
+			"postalCode": "19103",
+			"streetAddress1": "1901 Market Street"
+		},
+		"isTaxExempt": false
+	},
+	"deliveryTerm": "EXW",
+	"documentDate": "2021-09-01",
+	"documentNumber": "INV45787",
+	"lineItems": [
+		{
+			"extendedPrice": 530.00,
+			"inputTotalTax" : 8.00,
+			"lineItemId": "98788",
+			"lineItemNumber": 0,
+			"product": {
+				"productClass": "Electronics",
+				"value": "SV4397"
+			},
+			"quantity": {
+				"unitOfMeasure": "ea",
+				"value": 2
+			},
+			"unitPrice": 265.00
+		}
+	],
+	"postingDate": "2021-09-05",
+	"returnAssistedParametersIndicator": true,
+	"returnGeneratedLineItemsIndicator": true,
+	"returnTimeElapsedDetailsIndicator": true,
+	"roundAtLineLevel": true,
+	"saleMessageType": "DISTRIBUTE_TAX",
+	"seller": {
+		"administrativeOrigin": {
+			"city": "Naperville",
+			"mainDivision": "IL",
+			"postalCode": "60563",
+			"streetAddress1": "40 Shuman Boulevard",
+			"streetAddress2": "Suite 160"
+			},
+		"company": "101",
+		"division": "HQ",
+		"physicalOrigin": {
+			"city": "King of Prussia",
+			"country": "US",
+			"mainDivision": "PA",
+			"postalCode": "19406",
+			"streetAddress1": "2301 Renaissance Blvd",
+			"streetAddress2": "Suite 101"
+		}
+	},
+	"transactionId": "ABC125",
+	"transactionType": "SALE"
+}
